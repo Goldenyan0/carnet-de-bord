@@ -1114,97 +1114,7 @@
     };
     const pc = function (v) { return (v > 0 ? '+' : '') + fr(v, 2) + ' %'; };
 
-    // 1. MUL en fin de chaque trajet, du 08/11 au 20/11
-    const z1 = zone('eth-mul');
-    if (z1) {
-      const P = E.parcours;
-      const indice = function (jour, heure) { return P.findIndex(function (p) { return p.jour === jour && p.heure === heure; }); };
-      graphiqueCourbes(z1, {
-        series: bancs(P.map(function (p) { return p.fin[0]; }), P.map(function (p) { return p.fin[1]; })),
-        etiquettes: P.map(function (p) { return p.jour + ' ' + p.heure; }), axeX: 'fin de chaque trajet',
-        min: -30, max: 10, pas: 5, unite: '%', decimalesValeur: 2, hauteur: 300,
-        seuils: [{ v: -30, texte: 'butée basse de la MUL dans le flex v1 : -30 %' }],
-        reperes: [
-          { i: indice('14/11', '20h20'), texte: '+10 L E85' },
-          { i: indice('15/11', '18h39'), texte: '+5,22 L E85' },
-          { i: indice('19/11', '18h24'), texte: '+10 L SP98', gauche: true, ligne: 2 },
-          { i: indice('19/11', '21h17'), texte: 'flash' },
-          { i: indice('19/11', '22h11'), texte: '+15 L E85', gauche: true, ligne: 1 }
-        ],
-        description: 'Adaptation multiplicative (MUL) en fin de trajet du 08/11 au 20/11/2026 : autour de -2 à -4 % au SP98, elle monte jusqu\'à +8,84 % le 18/11 avec l\'éthanol, repart de 0 après le flash du 19/11 puis descend vers -17 et -20 %'
-      });
-      tableau(z1, ['Trajet', 'MUL banc 1', 'MUL banc 2', 'ADD banc 1', 'ADD banc 2', 'Eau max'], P.map(function (p) {
-        return [p.jour + ' ' + p.heure, pc(p.fin[0]), pc(p.fin[1]), fr(p.fin[2], 3) + ' ms', fr(p.fin[3], 3) + ' ms', fr(p.eauMax) + ' °C'];
-      }));
-    }
-
-    // 2. Premier ralenti après le flash : correction collée à la butée
-    const z2 = zone('eth-flash');
-    if (z2 && E.ralentiFlash) {
-      const F = E.ralentiFlash;
-      graphiqueCourbes(z2, {
-        titre: 'Correction lambda instantanée', series: bancs(F.li1, F.li2), etiquettes: F.t, axeX: 'heure (19/11)',
-        min: -35, max: 5, pas: 5, unite: '%', hauteur: 240,
-        seuils: [{ v: -31.25, texte: 'butée -31,25 %' }],
-        description: 'Premier ralenti après le flash, le 19/11/2026 de 21:17 à 21:20 : la correction lambda descend jusqu\'à -31,2 % et y reste collée près d\'une minute avant de revenir à 0'
-      });
-      graphiqueCourbes(z2, {
-        titre: 'Sondes lambda amont', series: bancs(F.s1, F.s2), legende: false, etiquettes: F.t, axeX: 'heure (19/11)',
-        min: 0, max: 1, pas: 0.2, decimales: 1, decimalesValeur: 2, unite: 'V', hauteur: 220,
-        description: 'Sondes lambda amont pendant le même ralenti : elles restent hautes, vers 0,83 à 0,93 volt, signe d\'un mélange riche'
-      });
-      tableau(z2, ['Heure', 'Régime', 'Corr. banc 1', 'Corr. banc 2', 'Sonde 1', 'Sonde 2'], F.t.map(function (t, i) {
-        return [t, F.rpm[i] + ' tr/min', fr(F.li1[i]) + ' %', fr(F.li2[i]) + ' %', fr(F.s1[i], 2) + ' V', fr(F.s2[i], 2) + ' V'];
-      }));
-    }
-
-    // 3. Route du 19/11 : la MUL apprend ; les trois trajets sont mis bout à bout
-    const z3 = zone('eth-route');
-    if (z3 && E.route) {
-      const R = E.route;
-      // Début du 2e trajet et plein de 22:12 (le log du retour reprend juste après)
-      const apres = function (h) { return R.t.findIndex(function (t) { return t >= h; }); };
-      const reperes = [{ i: apres('21:41'), texte: 'trajet 21:41' }, { i: apres('22:12'), texte: '+15 L E85 (22:12)', gauche: true }];
-      graphiqueCourbes(z3, {
-        titre: 'MUL (adaptation multiplicative)', series: bancs(R.mul1, R.mul2), etiquettes: R.t, axeX: 'heure (19/11)',
-        min: -25, max: 5, pas: 5, unite: '%', decimalesValeur: 2, hauteur: 260, reperes: reperes,
-        description: 'Route du 19/11/2026 après le flash : la MUL part de 0, monte vers +4,6 %, saute à -7,7 et -8,9 % vers 21:30 puis descend jusqu\'à -17,4 et -20,2 %, et remonte légèrement à -16,4 et -18,8 % après le plein de 15 litres d\'E85'
-      });
-      graphiqueCourbes(z3, {
-        titre: 'Vitesse', series: [{ nom: 'Vitesse', valeurs: R.vit, couleur: 'var(--serie-3)' }], legende: false, etiquettes: R.t, axeX: 'heure (19/11)',
-        min: 0, max: 120, pas: 20, unite: 'km/h', decimalesValeur: 0, hauteur: 200, reperes: reperes.map(function (r) { return { i: r.i, texte: '' }; }),
-        description: 'Vitesse pendant les mêmes trajets, jusqu\'à 100 km/h'
-      });
-      tableau(z3, ['Heure', 'MUL banc 1', 'MUL banc 2', 'Vitesse', 'Eau'], R.t.map(function (t, i) {
-        return [t, pc(R.mul1[i]), pc(R.mul2[i]), R.vit[i] + ' km/h', fr(R.eau[i]) + ' °C'];
-      }));
-    }
-
-    // 4. Démarrage à froid du 20/11
-    const z4 = zone('eth-froid');
-    if (z4 && E.froid) {
-      const C = E.froid;
-      graphiqueCourbes(z4, {
-        titre: 'Régime', series: [{ nom: 'Régime', valeurs: C.rpm, couleur: 'var(--serie-1)' }], legende: false, etiquettes: C.t, axeX: 'heure (20/11)',
-        min: 0, max: 2500, pas: 500, unite: 'tr/min', decimalesValeur: 0, hauteur: 220,
-        description: 'Démarrage à froid du 20/11/2026 à 08:41 : régime vers 1 000 tr/min au ralenti froid, puis trajet'
-      });
-      graphiqueCourbes(z4, {
-        titre: 'Température d\'eau', series: [{ nom: 'Eau', valeurs: C.eau, couleur: 'var(--serie-2)' }], legende: false, etiquettes: C.t, axeX: 'heure (20/11)',
-        min: 0, max: 70, pas: 10, unite: '°C', hauteur: 200,
-        description: 'Température d\'eau du même démarrage : de 15 °C à 64,5 °C en fin de trajet'
-      });
-      graphiqueCourbes(z4, {
-        titre: 'Correction lambda instantanée', series: bancs(C.li1, C.li2), etiquettes: C.t, axeX: 'heure (20/11)',
-        min: -10, max: 25, pas: 5, unite: '%', hauteur: 220,
-        description: 'Correction lambda instantanée du même trajet : autour de +4 % en roulant, jusqu\'à +20 % au ralenti'
-      });
-      tableau(z4, ['Heure', 'Régime', 'Eau', 'Corr. banc 1', 'Corr. banc 2', 'Vitesse'], C.t.map(function (t, i) {
-        return [t, C.rpm[i] + ' tr/min', fr(C.eau[i]) + ' °C', fr(C.li1[i]) + ' %', fr(C.li2[i]) + ' %', C.vit[i] + ' km/h'];
-      }));
-    }
-
-    // 5. Pression d'essence du 19/11 : relevés au manomètre (barres), puis régime pendant les essais
+    // Pression d'essence du 19/11 (voiture à l'arrêt) : relevés au manomètre (barres), puis régime pendant les essais à vide
     const z5 = zone('eth-pression');
     if (z5) {
       const mesures = [['Contact mis', 3.1, 'moteur arrêté'], ['Ralenti', 3.5, 'stable'], ['Accélérations', 3.5, 'constante jusqu\'à 6 107 tr/min'], ['Arrêt 18:32', 3.0, 'juste après l\'arrêt'], ['18:42', 2.9, 'dix minutes après']];
@@ -1225,28 +1135,7 @@
       }
     }
 
-    // 6. Mélange estimé après chaque plein (fourchettes : barres flottantes)
-    const z6 = zone('eth-melange');
-    if (z6) {
-      const plein = 'var(--serie-1)', mul = 'var(--serie-3)';
-      graphiqueBarres(z6, {
-        barres: [
-          { nom: '', groupe: '14/11', bas: 18, valeur: 26, texte: 'E18-E26', couleur: plein },
-          { nom: '', groupe: '15/11', bas: 22, valeur: 32, texte: 'E22-E32', couleur: plein },
-          { nom: '', groupe: '18/11', bas: 31, valeur: 33, texte: 'E31-E33', couleur: mul },
-          { nom: '', groupe: '19/11 avant 18h', bas: 12, valeur: 20, texte: 'E12-E20', couleur: plein },
-          { nom: '', groupe: '19/11 22:12', bas: 34, valeur: 50, texte: 'E34-E50', couleur: plein },
-          { nom: '', groupe: '20/11 soir', bas: 55, valeur: 62, texte: 'E55-E62', couleur: mul },
-          { nom: '', groupe: '25/11', bas: 60, valeur: 65, texte: 'E60-E65', couleur: mul }
-        ],
-        max: 70, pas: 10, unite: '%', seuils: [{ v: 40, texte: 'E40 : hypothèse de calcul' }],
-        legende: [{ nom: 'Calcul d\'après le plein', couleur: plein }, { nom: 'D\'après la MUL', couleur: mul }],
-        description: 'Taux d\'éthanol estimé : E18 à E26 après le plein du 14/11, E22 à E32 après celui du 15/11, E31 à E33 d\'après la MUL le 18/11, E12 à E20 après les 10 litres de SP98 du 19/11, E34 à E50 après les 15 litres d\'E85 du soir, E55 à E62 le 20/11 au soir et E60 à E65 le 25/11 d\'après les corrections',
-        tableau: [['Après', 'Mélange estimé', 'Source'], [['14/11', 'E18-E26', 'calcul du plein'], ['15/11', 'E22-E32', 'calcul du plein'], ['18/11', 'E31-E33', 'MUL'], ['19/11, avant 18h', 'E12-E20', 'calcul du plein'], ['19/11, 22:12', 'E34-E50 (E40 : hypothèse)', 'calcul du plein'], ['20/11, soir', 'E55-E62', 'MUL'], ['25/11', 'E60-E65', 'MUL']]]
-      });
-    }
-
-    // 7. Profil de démarrage C3 : facteur flex v1 par rapport à l'origine (origine = 1)
+    // Profil de démarrage C3 : facteur flex v1 par rapport à l'origine (origine = 1)
     const z7 = zone('eth-c3');
     if (z7) {
       const pre = [1.30, 1.55, 1.58, 1.58, 1.41, 1.16, 1.14, 1.14];
