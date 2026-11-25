@@ -1,0 +1,1843 @@
+<!DOCTYPE html>
+<html lang="fr" data-voyage>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow, noarchive" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none'; worker-src 'self' blob:; script-src 'self' https://cdn.jsdelivr.net 'wasm-unsafe-eval' 'sha256-SmH1AU+q8wMslBIIh+GpdAlYPebCin25FMs3N1+rY4E=' 'sha256-KdwMH+AzGDNDosnmI+yteLvITvJmpIAsmYJ9JNR+oPw='; connect-src 'self' blob: data:" />
+  <title>Projet automobile — BMW E39 520i (M54B22) · Yanis Poulain</title>
+  <meta name="description" content="Ma BMW E39 520i de 2002 : remise en état, diagnostic au PC, codage NCS Expert, puissance mesurée sur route et conversion à l'E85 en quatre flashs du calculateur, cartographies en 3D." />
+  <meta name="author" content="Yanis Poulain" />
+  <meta name="theme-color" content="#fafaf9" />
+
+  <!-- Open Graph (aperçu lors d'un partage de lien) -->
+  <meta property="og:type" content="article" />
+  <meta property="og:locale" content="fr_FR" />
+  <meta property="og:site_name" content="Yanis Poulain" />
+  <meta property="og:title" content="Projet automobile — BMW E39 520i (M54B22)" />
+  <meta property="og:description" content="Ma BMW E39 remise en état puis convertie à l'E85 : mesures, flashs du calculateur et cartographies en 3D." />
+  <meta property="og:image" content="img/e39/e39-bord-de-mer-avant.jpg" />
+  <meta property="og:image:alt" content="BMW E39 bleue au bord de la mer, anneaux des phares allumés, plaque floutée" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%237c3aed'/><text x='50' y='67' font-size='52' font-family='Arial,sans-serif' font-weight='bold' fill='white' text-anchor='middle'>YP</text></svg>" />
+
+  <link rel="preload" href="fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="css/style.css" />
+
+  <script>
+    // Classes posées avant l'affichage (aucun saut de mise en page) :
+    // "js" : JavaScript actif ; "anime" : le visiteur accepte les animations.
+    // Mode d'affichage commun à tout le site, mémorisé dans localStorage ("mode-affichage") :
+    // "vue-classique" par défaut (page simple et légère) ; "mode-3d" sur choix du visiteur.
+    // ?vue=3d ou ?vue=classique (posé par l'interrupteur) l'emporte, même sans stockage.
+    (function () {
+      var racine = document.documentElement;
+      racine.classList.add('js');
+      var anime = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (anime) racine.classList.add('anime');
+      var demande = /[?&]vue=(3d|classique)\b/.exec(location.search);
+      var mode = demande ? demande[1] : 'classique';
+      try {
+        if (demande) localStorage.setItem('mode-affichage', mode);
+        else mode = localStorage.getItem('mode-affichage') === '3d' ? '3d' : 'classique';
+        localStorage.removeItem('vue');
+      } catch (e) { /* stockage indisponible : mode classique (ou celui de l'adresse) */ }
+      if (demande && history.replaceState) history.replaceState(null, '', location.pathname + location.hash);
+      // La 3D demande les animations et WebGL ; sinon la page reste classique
+      var en3d = mode === '3d' && anime && !!window.WebGLRenderingContext;
+      racine.classList.add(en3d ? 'mode-3d' : 'vue-classique');
+      // "voyage" : les sections deviennent des cartes posées dans l'espace 3D (espace-3d.js)
+      if (en3d && racine.hasAttribute('data-voyage')) racine.classList.add('voyage');
+    })();
+  </script>
+
+  <!-- Correspondance des modules Three.js (le moteur 3D importe "three" et ses compléments) -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+
+<body class="page-e39">
+
+  <svg width="0" height="0" class="visuellement-cache" aria-hidden="true">
+    <symbol id="i-fleche" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M13 6l6 6-6 6"/></symbol>
+    <symbol id="i-fleche-retour" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="M19 12H5m6-6-6 6 6 6"/></symbol>
+    <symbol id="i-eclate" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M4 4h16v4H4zM4 10h16v4H4zM4 16h16v4H4zM12 1v2m0 18v2"/></symbol>
+    <symbol id="i-voiture" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M3 16v-3l2-5h10l4 5h2v3h-2M3 16h2m4 0h6"/><circle cx="7" cy="16" r="2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17" cy="16" r="2" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+    <symbol id="i-acceleration" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M4 18a8 8 0 1 1 16 0M12 18l4-6"/></symbol>
+    <symbol id="i-goutte" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" d="M12 3s6 7 6 11a6 6 0 0 1-12 0c0-4 6-11 6-11z"/></symbol>
+    <symbol id="i-calques" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" d="M12 3 3 8l9 5 9-5-9-5ZM3 13l9 5 9-5M3 17.5l9 5 9-5"/></symbol>
+    <symbol id="i-plus"viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-moins" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" d="M5 12h14"/></symbol>
+    <symbol id="i-plein-ecran" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M14 4h6v6M10 20H4v-6M20 4l-7 7M4 20l7-7"/></symbol>
+    <symbol id="i-points" viewBox="0 0 24 24"><circle cx="7" cy="8" r="2.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17" cy="9" r="2.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="11" cy="17" r="2.5" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+    <symbol id="i-recentrer" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></symbol>
+    <symbol id="i-fermer"viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" d="M6 6l12 12M18 6 6 18"/></symbol>
+    <symbol id="i-portes" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" d="M4 20V5l9-2v19l-9-2Zm9-17h7v17h-7M10 12h.01"/></symbol>
+    <symbol id="i-rotation" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M20 12a8 8 0 1 1-2.34-5.66M20 4v4h-4M10 9v6m4-6v6"/></symbol>
+    <symbol id="i-cache" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M3 14h18l-2 4H5l-2-4Zm4-4V7m5 3V5m5 5V7"/></symbol>
+    <symbol id="i-interieur" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Zm0 6a3 3 0 1 0 0 6 3 3 0 0 0 0-6ZM3.5 10.5 9 12m6 0 5.5-1.5M12 15v6"/></symbol>
+    <symbol id="i-exterieur" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M3 16v-3l2-5h10l4 5h2v3h-2M3 16h2m4 0h6"/><circle cx="7" cy="16" r="2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17" cy="16" r="2" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+  </svg>
+
+  <a class="lien-evitement" href="#contenu">Aller au contenu</a>
+
+
+  <!-- ══ Navigation ══ -->
+  <header class="nav" id="nav">
+    <div class="conteneur nav__interieur">
+      <a class="nav__logo" href="https://goldenyan0.github.io/portfolio/" aria-label="Yanis Poulain, retour au portfolio">
+        <span class="nav__monogramme" aria-hidden="true">YP</span>
+        <span>Yanis Poulain</span>
+      </a>
+      <nav aria-label="Navigation principale">
+        <ul class="nav__liens">
+          <li><a href="#histoire">L'histoire</a></li>
+          <li><a href="#fiche-technique">La voiture</a></li>
+          <li><a href="#fil-rouge">Remise en état</a></li>
+          <li><a href="#outils">Outils</a></li>
+          <li><a href="#ethanol">E85</a></li>
+          <li><a href="#galerie">Galerie</a></li>
+          <li><a href="https://goldenyan0.github.io/portfolio/">Portfolio</a></li>
+        </ul>
+      </nav>
+      <div class="nav__actions">
+        <a class="bouton bouton--petit nav__cv" href="https://goldenyan0.github.io/portfolio/cv.html"><span class="bouton__texte">Mon CV</span></a>
+        <button class="nav__burger" id="burger" type="button" aria-expanded="false" aria-controls="menu-mobile">
+          <span></span><span class="visuellement-cache">Ouvrir le menu</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="menu-mobile" id="menu-mobile">
+    <a href="#histoire">L'histoire</a>
+    <a href="#fiche-technique">La voiture</a>
+    <a href="#fil-rouge">Remise en état</a>
+    <a href="#chantiers">· Les chantiers</a>
+    <a href="#pieces-montees">· Les pièces montées</a>
+    <a href="#outils">Les outils</a>
+    <a href="#codage">· Le codage NCS Expert</a>
+    <a href="#ethanol">E85</a>
+    <a href="#flashs">· Les 4 fichiers</a>
+    <a href="#e85-valeurs">· Toutes les valeurs</a>
+    <a href="#galerie">Galerie</a>
+    <a href="https://goldenyan0.github.io/portfolio/">Portfolio</a>
+  </div>
+
+  <main id="contenu" class="e39">
+
+
+    <!-- ══ Hero : grande photo, une phrase simple, quatre chiffres ══ -->
+    <section class="e39-hero e39-hero--plein" data-etape="BMW E39 520i" aria-labelledby="e39-titre">
+      <picture class="e39-hero__fond">
+        <source type="image/webp" srcset="img/e39/e39-bord-de-mer-avant-480.webp 480w, img/e39/e39-bord-de-mer-avant-960.webp 960w" sizes="100vw" />
+        <img src="img/e39/e39-bord-de-mer-avant.jpg" data-grande="img/e39/e39-bord-de-mer-avant.jpg" width="900" height="1599" fetchpriority="high" alt="Ma BMW E39 bleue au bord de la mer, anneaux des phares allumés en jaune, plaque floutée" />
+      </picture>
+      <div class="conteneur e39-hero__contenu">
+        <p class="surtitre" data-revele>Projet automobile · état au 25/11/2026</p>
+        <h1 class="e39-hero__titre" id="e39-titre" data-mots>BMW E39 <em>520i</em></h1>
+        <p class="e39-hero__accroche" data-revele>Une voiture de 2002 que j'ai remise en état moi-même, puis un projet d'étude et de rétro-ingénierie de son calculateur moteur, autour du bioéthanol E85. Un câble, deux ordinateurs, et chaque chiffre vérifié.</p>
+        <ul class="e39-hero__chiffres" data-revele>
+          <li><strong>≈ 164 000 km</strong><span>à l'achat, le 16/08/2026</span></li>
+          <li><strong>21</strong><span>pièces et produits neufs, référencés</span></li>
+          <li><strong>16 options</strong><span>de confort codées avec NCS Expert</span></li>
+          <li><strong>4 fichiers</strong><span>du calculateur étudiés et vérifiés</span></li>
+        </ul>
+        <div class="hero__actions" data-revele>
+          <a class="bouton magnetique" href="#histoire"><span class="bouton__texte">L'histoire en 2 minutes</span></a>
+          <a class="bouton bouton--clair magnetique" href="#flashs"><span class="bouton__texte">Voir l'étude du calculateur</span></a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ L'histoire en 6 étapes : lecture facile, un lien vers chaque partie détaillée ══ -->
+    <section class="section histoire" id="histoire" data-etape="L'histoire" aria-labelledby="histoire-titre">
+      <div class="conteneur">
+        <div class="entete-section">
+          <p class="surtitre" data-revele>L'histoire en 2 minutes · du 16/08 au 25/11/2026</p>
+          <h2 class="titre-section" id="histoire-titre" data-mots>Six étapes, <em>trois mois.</em></h2>
+          <p data-revele>D'abord remettre la voiture en état, puis étudier son calculateur pour l'E85. Chaque carte résume une étape en quelques mots ; le lien mène au détail.</p>
+        </div>
+        <ol class="histoire__etapes" data-cascade>
+          <li class="histoire__carte" data-revele>
+            <img src="img/e39/e39-trois-quarts-avant-jour-480.webp" width="480" height="853" loading="lazy" alt="La voiture de trois quarts avant, de jour, plaque floutée" />
+            <div class="histoire__texte">
+              <p class="histoire__num"><span>1</span>16/08/2026</p>
+              <h3>Le coup de cœur</h3>
+              <p>J'achète une BMW de 2002 à environ 164 000 km. Pas de rouille, des factures d'entretien : une bonne base.</p>
+              <a class="lien-fleche" href="#chantiers">Les chantiers</a>
+            </div>
+          </li>
+          <li class="histoire__carte" data-revele>
+            <img src="img/e39/v519-p0171.jpg" width="640" height="1137" loading="lazy" alt="La valise de diagnostic affiche le code P0171 : mélange trop pauvre" />
+            <div class="histoire__texte">
+              <p class="histoire__num"><span>2</span>Septembre · octobre</p>
+              <h3>De l'air qui entre en cachette</h3>
+              <p>Le moteur aspirait de l'air par une petite fissure : le calculateur ajoutait de l'essence pour compenser. Un test à la fumée trouve la fuite ; un collier serré, et tout revient à la normale.</p>
+              <a class="lien-fleche" href="#fil-rouge">La méthode</a>
+            </div>
+          </li>
+          <li class="histoire__carte" data-revele>
+            <img src="img/e39/thermostat-pompe-eau-neufs-480.jpg" width="480" height="270" loading="lazy" alt="Le thermostat et la pompe à eau neufs, en place sur le moteur" />
+            <div class="histoire__texte">
+              <p class="histoire__num"><span>3</span>Août à novembre</p>
+              <h3>L'entretien remis à zéro</h3>
+              <p>Vidange, filtres, pompe à essence, débitmètre, radiateur, pompe à eau, thermostat, bougies : chaque pièce neuve est notée avec sa référence et sa date.</p>
+              <a class="lien-fleche" href="#pieces-montees">Les pièces montées</a>
+            </div>
+          </li>
+          <li class="histoire__carte" data-revele>
+            <img src="img/e39/cable-kdcan-prise-obd-480.jpg" width="480" height="853" loading="lazy" alt="La prise de diagnostic à 16 broches du câble K+DCAN" />
+            <div class="histoire__texte">
+              <p class="histoire__num"><span>4</span>Octobre · novembre</p>
+              <h3>J'écoute la voiture</h3>
+              <p>Un câble sur la prise de diagnostic : mon PC lit ce que mesure chaque boîtier électronique. Avec NCS Expert, j'étudie aussi le codage du confort : verrouillage, feux.</p>
+              <a class="lien-fleche" href="#outils">Les outils</a>
+            </div>
+          </li>
+          <li class="histoire__carte" data-revele>
+            <img src="img/e39/e39-bord-de-mer-large-480.webp" width="480" height="853" loading="lazy" alt="La voiture vue de l'arrière, feux allumés, face à la mer, plaque floutée" />
+            <div class="histoire__texte">
+              <p class="histoire__num"><span>5</span>08 au 15/11/2026</p>
+              <h3>Je lis le calculateur</h3>
+              <p>Une copie complète de son logiciel, puis ses cartographies lues une par une et son programme analysé : je comprends comment il dose le carburant et l'allumage.</p>
+              <a class="lien-fleche" href="#e85-valeurs">Les cartographies</a>
+            </div>
+          </li>
+          <li class="histoire__carte" data-revele>
+            <img src="img/e39/bobines-et-bougies-denso-480.jpg" width="480" height="853" loading="lazy" alt="Les six bobines au sol, à côté des bougies Denso neuves et des anciennes" />
+            <div class="histoire__texte">
+              <p class="histoire__num"><span>6</span>18 au 23/11/2026</p>
+              <h3>J'étudie l'E85</h3>
+              <p>Quatre versions d'un fichier pour l'E85, préparées et vérifiées : seules les valeurs prévues changent, contrôlées par mes programmes et par des tests sur émulateur. Pour rouler à l'E85, j'envisage un boîtier homologué.</p>
+              <a class="lien-fleche" href="#flashs">Les 4 fichiers</a>
+            </div>
+          </li>
+        </ol>
+
+        <aside class="mode-emploi" data-revele aria-label="Comment lire cette page">
+          <h3>Comment lire cette page</h3>
+          <ul>
+            <li><span class="mode-emploi__pastille mode-emploi__pastille--simple">En simple</span>L'idée de chaque partie en quelques phrases, pour tout le monde.</li>
+            <li><span class="mode-emploi__pastille">Chiffres clés</span>Les mesures qui comptent, en gros.</li>
+            <li><span class="mode-emploi__pastille mode-emploi__pastille--creuser">Pour creuser</span>Les blocs repliables : tous les détails, calculs et sources.</li>
+            <li><span class="mode-emploi__pastille mode-emploi__pastille--estime">Estimé</span>Un calcul avec des hypothèses, pas une mesure.</li>
+          </ul>
+          <p class="note-cadre"><strong>Cadre du projet.</strong> Pour rouler à l'E85 en toute légalité, j'envisage un boîtier flex fuel homologué, posé par un installateur agréé, avec mise à jour de la carte grise et déclaration à l'assureur. Les modifications logicielles présentées ici sont un projet d'étude, non homologué, à ne pas reproduire sur un véhicule circulant sur la voie publique.</p>
+        </aside>
+
+        <details class="repli repli--section" data-revele>
+          <summary>Toutes les dates, de l'achat à l'étude du calculateur</summary>
+          <ol class="frise">
+          <li><p class="frise__date">16/08/2026</p><p>Achat de la voiture, environ 164 000 km. <a href="#chantiers">Les chantiers</a></p></li>
+          <li><p class="frise__date">Vers le 23/08 · fin août</p><p>Vidange à 164 292 km, capteur d'arbre à cames, puis filtre à essence. <a href="#pieces-montees">Les pièces</a></p></li>
+          <li><p class="frise__date">Fin août · septembre</p><p>Mélange pauvre : premiers codes défaut. <a href="#chantiers">Les chantiers</a></p></li>
+          <li><p class="frise__date">03/10/2026</p><p>Pompe à essence AEM 340 L/h. <a href="#chantiers">Les chantiers</a></p></li>
+          <li><p class="frise__date">08 · 14/10/2026</p><p>Diagnostic, débitmètre neuf, fuite trouvée au test fumée sur le manchon d'admission, serré par un collier : corrections revenues à 0 %. <a href="#resultat">Le résultat</a></p></li>
+          <li><p class="frise__date">18/10/2026</p><p>Refroidissement refait : radiateur, pompe à eau, thermostat. <a href="#chantiers">Les chantiers</a></p></li>
+          <li><p class="frise__date">06 · 11/11/2026</p><p>Diagnostic complet au PC, codage NCS Expert du confort (08/11), copie du calculateur, cartographies lues. <a href="#chantiers">Les chantiers</a></p></li>
+            <li><p class="frise__date">15 au 23/11/2026</p><p>Programme du calculateur analysé, puis quatre versions d'un fichier pour l'E85 préparées et vérifiées. <a href="#flashs">L'étude</a></p></li>
+            <li><p class="frise__date">19/11/2026</p><p>Bougies Denso neuves, pression d'essence mesurée au manomètre. <a href="#pieces-montees">Les pièces</a></p></li>
+            <li><p class="frise__date">Ensuite</p><p>Un boîtier flex fuel homologué, posé par un installateur agréé, pour rouler à l'E85 légalement. <a href="#e85-suite">La suite</a></p></li>
+        </ol>
+        </details>
+
+        <ol class="parties" data-revele>
+          <li><a href="#fiche-technique"><span>Partie 1</span>La voiture<small>Fiche technique, tour en 3D, le moteur expliqué, les pièces</small></a></li>
+          <li><a href="#fil-rouge"><span>Partie 2</span>La remise en état<small>Août au 25/11/2026 : méthode, chantiers, pièces, relevés</small></a></li>
+          <li><a href="#outils"><span>Partie 3</span>Les outils<small>Diagnostic, codage NCS Expert, copie du calculateur</small></a></li>
+          <li><a href="#ethanol"><span>Partie 4</span>L'étude du calculateur et l'E85<small>Les 4 fichiers, les cartographies en 3D, les vérifications</small></a></li>
+          <li><a href="#sources"><span>Partie 5</span>Sources et galerie<small>Comment j'ai trouvé mes informations, la voiture en photos</small></a></li>
+        </ol>
+      </div>
+    </section>
+    <!-- ══ Fiche technique ══ -->
+    <section class="section caracteristiques volet" id="fiche-technique" data-volet data-etape="Fiche technique" aria-labelledby="caracteristiques-titre">
+      <div class="conteneur">
+        <div class="entete-section">
+          <p class="partie-badge" data-revele>Partie 1 · La voiture</p>
+          <p class="surtitre" data-revele>Fiche technique</p>
+          <h2 class="titre-section" id="caracteristiques-titre" data-mots>La 520i, <em>en chiffres.</em></h2>
+          <p data-revele>BMW 520i E39 berline, 2002, boîte manuelle. Valeurs constructeur d'après la fiche technique d'auto-data.net, puis ce que j'ai lu et mesuré sur ma voiture.</p>
+
+          <div class="en-simple" data-revele>
+            <p class="en-simple__titre">En simple</p>
+            <p>Une BMW Série 5 de 2002 : une grande berline, un moteur à six cylindres en ligne de 2,2 litres et une boîte manuelle. Le cerveau du moteur est un petit ordinateur, le calculateur Siemens MS43 : c'est lui que j'ai reprogrammé.</p>
+          </div>
+        </div>
+        <div class="caracteristiques__grille" data-cascade>
+          <div class="caracteristiques__bloc" data-revele>
+            <h3>Moteur</h3>
+            <dl>
+            <div><dt>Moteur</dt><dd>M54B22, 6 cylindres en ligne</dd></div>
+            <div><dt>Cylindrée</dt><dd>2 171 cm³</dd></div>
+            <div class="caracteristiques__fort"><dt>Puissance</dt><dd>170 ch <span>à 6 100 tr/min</span></dd></div>
+            <div class="caracteristiques__fort"><dt>Couple</dt><dd>210 Nm <span>à 3 500 tr/min</span></dd></div>
+          </dl>
+          </div>
+          <div class="caracteristiques__bloc" data-revele>
+            <h3>Transmission et freinage</h3>
+            <dl>
+            <div><dt>Transmission</dt><dd>Propulsion</dd></div>
+            <div><dt>Boîte</dt><dd>Manuelle, 5 rapports</dd></div>
+            <div><dt>Freins</dt><dd>4 disques</dd></div>
+            <div><dt>Jantes et pneus</dt><dd>15 pouces aujourd'hui (205/65 R15) ; changement de jantes prévu (la maquette montre des 17 pouces)</dd></div>
+          </dl>
+          </div>
+          <div class="caracteristiques__bloc" data-revele>
+            <h3>Gabarit</h3>
+            <dl>
+            <div><dt>Longueur × largeur × hauteur</dt><dd>4 775 × 1 800 × 1 435 mm</dd></div>
+            <div><dt>Empattement</dt><dd>2 830 mm</dd></div>
+            <div><dt>Poids</dt><dd>1 495 kg</dd></div>
+            <div><dt>Coffre</dt><dd>460 L</dd></div>
+            <div><dt>Réservoir</dt><dd>70 L</dd></div>
+          </dl>
+          </div>
+          <div class="caracteristiques__bloc" data-revele>
+            <h3>Performances et consommation</h3>
+            <dl>
+            <div class="caracteristiques__fort"><dt>Vitesse maximale</dt><dd>226 km/h</dd></div>
+            <div class="caracteristiques__fort"><dt>0 à 100 km/h</dt><dd>9,1 s</dd></div>
+            <div><dt>Urbaine</dt><dd>12,2 L/100 km</dd></div>
+            <div><dt>Extra-urbaine</dt><dd>7,1 L/100 km</dd></div>
+            <div><dt>Mixte</dt><dd>9,0 L/100 km</dd></div>
+          </dl>
+          </div>
+          <div class="caracteristiques__bloc" data-revele>
+            <h3>Ma voiture, lue et mesurée</h3>
+            <dl>
+            <div><dt>Kilométrage</dt><dd>Environ 168 000 km <span>(novembre 2026)</span></dd></div>
+            <div><dt>Logiciel du calculateur</dt><dd>430037 <span>(référence 7511570)</span></dd></div>
+            <div><dt>Injecteurs</dt><dd>D'origine, environ 64 à 65 % d'ouverture à fond <span>au SP98</span></dd></div>
+            <div><dt>Limiteur</dt><dd>Vers 6 500 tr/min</dd></div>
+          </dl>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- ══ Encyclopédie : le tour des équipements, puis l'habitacle (piloté par moteur-3d.js) ══ -->
+    <section class="section encyclopedie" id="encyclopedie" data-etape="Encyclopédie" aria-labelledby="encyclo-titre">
+      <div class="conteneur">
+        <div class="entete-section">
+          <p class="surtitre" data-revele>Encyclopédie</p>
+          <h2 class="titre-section" id="encyclo-titre" data-mots>Le tour <em>du propriétaire.</em></h2>
+          <p data-revele>Touchez un point pour découvrir l'équipement ; portes, capot et coffre s'ouvrent au clic. Puis installez-vous au volant.</p>
+        </div>
+      </div>
+      <div class="conteneur conteneur--large">
+        <div class="encyclo" data-revele>
+          <div class="encyclo__scene" id="encyclo-scene"></div>
+          <div class="encyclo__points" id="encyclo-points"></div>
+          <p class="moteur3d__survol" id="encyclo-survol" aria-live="polite"></p>
+          <div class="encyclo__vues" role="group" aria-label="Vue de l'encyclopédie">
+            <button class="bouton bouton--clair" type="button" data-encyclo-vue="exterieur" aria-pressed="true"><span class="bouton__texte"><svg aria-hidden="true"><use href="#i-exterieur"/></svg>Extérieur</span></button>
+            <button class="bouton bouton--clair" type="button" data-encyclo-vue="interieur" aria-pressed="false"><span class="bouton__texte"><svg aria-hidden="true"><use href="#i-interieur"/></svg>Intérieur</span></button>
+            <button class="bouton bouton--clair" type="button" data-encyclo-points aria-pressed="false"><span class="bouton__texte"><svg aria-hidden="true"><use href="#i-points"/></svg><span data-libelle>Masquer les points</span></span></button>
+            <button class="bouton bouton--clair" type="button" data-encyclo-base><span class="bouton__texte"><svg aria-hidden="true"><use href="#i-recentrer"/></svg>Vue de base</span></button>
+          </div>
+          <div class="moteur3d__pivot encyclo__pivot" role="group" aria-label="Déplacer la vue">
+            <button type="button" data-pivot="0,-1" aria-label="Pivoter vers le haut"><svg aria-hidden="true"><use href="#i-fleche"/></svg></button>
+            <button type="button" data-pivot="-1,0" aria-label="Pivoter vers la gauche"><svg aria-hidden="true"><use href="#i-fleche"/></svg></button>
+            <button type="button" data-pivot="1,0" aria-label="Pivoter vers la droite"><svg aria-hidden="true"><use href="#i-fleche"/></svg></button>
+            <button type="button" data-pivot="0,1" aria-label="Pivoter vers le bas"><svg aria-hidden="true"><use href="#i-fleche"/></svg></button>
+            <button type="button" data-hauteur="1" aria-label="Monter"><svg aria-hidden="true"><use href="#i-fleche"/></svg></button>
+            <button type="button" data-hauteur="-1" aria-label="Descendre"><svg aria-hidden="true"><use href="#i-fleche"/></svg></button>
+            <button type="button" data-zoom="1" aria-label="Zoomer"><svg aria-hidden="true"><use href="#i-plus"/></svg></button>
+            <button type="button" data-zoom="-1" aria-label="Dézoomer"><svg aria-hidden="true"><use href="#i-moins"/></svg></button>
+            <button type="button" data-zoom="0" aria-label="Recentrer la vue"><svg aria-hidden="true"><use href="#i-recentrer"/></svg></button>
+          </div>
+          <button class="encyclo__plein-ecran" type="button" data-plein-ecran aria-label="Plein écran" aria-pressed="false"><svg aria-hidden="true"><use href="#i-plein-ecran"/></svg></button>
+          <div class="encyclo__carte" id="encyclo-carte" hidden>
+            <button class="encyclo__fermer" type="button" data-fermer aria-label="Fermer"><svg class="icone" aria-hidden="true"><use href="#i-fermer"/></svg></button>
+            <h3 data-titre></h3>
+            <p data-texte></p>
+          </div>
+          <p class="encyclo__aide encyclo__aide--exterieur">Glissez pour tourner autour de la voiture · clic droit pour déplacer</p>
+          <p class="encyclo__aide encyclo__aide--interieur">Place du conducteur : glissez pour regarder autour de vous</p>
+        </div>
+      </div>
+    </section>
+    <!-- ══ Documentation : Le M54 expliqué ══ -->
+    <section class="section documentation" id="documentation" data-etape="Documentation" aria-labelledby="doc-titre">
+      <!-- Visite guidée 3D : la voiture reste à l'écran pendant qu'on fait défiler les fiches,
+           la caméra rejoint la pièce de chaque fiche (piloté par moteur-3d.js) -->
+      <div class="visite" id="visite" data-voyage-fond>
+        <div class="visite__scene" id="visite-scene" aria-hidden="true"></div>
+        <div class="visite__hud" data-voyage-dessus>
+          <p class="visite__piece" id="visite-piece" aria-hidden="true"></p>
+          <!-- Compteur « Fiche X / N » : un clic déroule la liste des fiches (e39.js) -->
+          <div class="visite__sommaire">
+            <button class="visite__compteur" id="visite-compteur" type="button" aria-expanded="false" aria-controls="visite-liste"></button>
+            <ol class="visite__liste" id="visite-liste" hidden></ol>
+          </div>
+          <a class="visite__suite" href="#reel">Aller à la suite <svg class="icone" aria-hidden="true"><use href="#i-fleche"/></svg></a>
+        </div>
+      </div>
+      <span class="mot-fond" data-glisse="-0.35" aria-hidden="true">M54</span>
+      <div class="conteneur">
+        <div class="entete-section" data-carte>
+          <p class="surtitre" data-revele>Documentation</p>
+          <h2 class="titre-section" id="doc-titre" data-mots>Le M54 <em>expliqué.</em></h2>
+          <p data-revele>La voiture en <span data-nombre-categories>14</span> grands groupes, de la mécanique à la carrosserie : <span data-nombre-fiches>84</span> fiches en tout. Dépliez le détail d'un groupe pour ouvrir la fiche d'une pièce : sa place dans la voiture, la pièce seule en 3D et, quand elle existe, sa photo réelle.</p>
+          <p class="note-maquette" data-revele>La maquette reste une simplification : de nombreux petits éléments — durites, colliers, faisceaux électriques, capteurs, visserie — ne sont pas représentés.</p>
+          <a class="visite__passer" href="#reel">Passer la visite guidée : aller à la maquette <svg class="icone" aria-hidden="true"><use href="#i-fleche"/></svg></a>
+        </div>
+
+        <!-- Les fiches de la visite : celles des pièces (js/pieces-e39.js), créées par e39.js -->
+        <div class="fiches fiches--pieces" id="fiches-visite"></div>
+      </div>
+    </section>
+    <!-- ══ Réel ou maquette : un vrai compartiment moteur et la maquette sous le même angle ══ -->
+    <section class="section reel" id="reel" data-etape="Réel ou maquette" aria-labelledby="reel-titre">
+      <div class="conteneur">
+        <div class="entete-section">
+          <p class="surtitre" data-revele>Réel ou maquette</p>
+          <h2 class="titre-section" id="reel-titre" data-mots>La photo, <em>la maquette.</em></h2>
+          <p data-revele>Un vrai compartiment moteur de E39 à moteur M54, et la maquette vue sous le même angle, capot ouvert. Faites glisser le curseur pour passer de l'un à l'autre.</p>
+        </div>
+        <figure class="comparaison-photo" data-revele>
+          <div class="comparaison-photo__cadre" style="--position: 50%">
+            <img class="comparaison-photo__reel" src="img/e39/baie-moteur-vue-dessus-960.webp" srcset="img/e39/baie-moteur-vue-dessus-480.webp 480w, img/e39/baie-moteur-vue-dessus-960.webp 960w" sizes="(max-width: 1040px) 100vw, 960px" data-grande="img/e39/baie-moteur-vue-dessus.jpg" width="1400" height="937" loading="lazy" alt="Photo réelle d'un compartiment moteur de BMW E39 vu de face, capot ouvert : cache moteur BMW nervuré, boîte à air à droite, bloc ABS et réservoir de lave-glace à gauche, radiateur et vase d'expansion au premier plan" />
+            <img class="comparaison-photo__maquette" id="comparaison-maquette" width="1200" height="803" alt="La maquette 3D vue sous le même angle, capot ouvert, cache moteur posé" />
+            <span class="comparaison-photo__etiquette comparaison-photo__etiquette--reel" aria-hidden="true">Photo</span>
+            <span class="comparaison-photo__etiquette comparaison-photo__etiquette--maquette" aria-hidden="true">Maquette</span>
+            <span class="comparaison-photo__poignee" aria-hidden="true"></span>
+            <input class="comparaison-photo__curseur" type="range" min="0" max="100" value="50" aria-label="Proportion de la photo réelle et de la maquette" />
+          </div>
+          <figcaption>
+            <span>À gauche du curseur, la photo ; à droite, la maquette.</span>
+            <button class="lien-bouton" type="button" data-vue-photo>Voir cet angle dans la maquette <svg class="icone" aria-hidden="true"><use href="#i-fleche"/></svg></button>
+          </figcaption>
+        </figure>
+      </div>
+    </section>
+    <!-- ══ Index des fiches pièces : accordéons par catégorie, sans description (rempli par e39.js) ══ -->
+    <section class="section index-pieces" id="pieces" data-etape="Index des pièces" aria-labelledby="pieces-titre">
+      <div class="conteneur">
+        <div class="entete-section">
+          <p class="surtitre" data-revele>Index des pièces</p>
+          <h2 class="titre-section" id="pieces-titre" data-mots>Toutes les <em>pièces.</em></h2>
+          <p data-revele>Une fiche par pièce : sa place dans la voiture et la pièce seule, en 3D. Dépliez une catégorie.</p>
+          <p class="note-maquette" data-revele>La maquette reste une simplification : de nombreux petits éléments — durites, colliers, faisceaux électriques, capteurs, visserie — ne sont pas représentés.</p>
+        </div>
+        <div class="accordeons" id="index-pieces" data-revele></div>
+      </div>
+    </section>
+    <!-- ══ Le moteur en 3D : la maquette complète, à la fin du parcours ══ -->
+    <section class="section moteur" id="moteur" data-etape="Le moteur" aria-labelledby="moteur-titre">
+      <div class="conteneur">
+        <div class="entete-section">
+          <p class="surtitre" data-revele>Le moteur</p>
+          <h2 class="titre-section" id="moteur-titre" data-mots>Le M54 <em>en pièces.</em></h2>
+          <p data-revele>Une maquette du six cylindres dans sa carrosserie : faites-la tourner, ouvrez la vue éclatée, cliquez une pièce pour ouvrir sa fiche. Portes, capot et coffre s'ouvrent au clic ; le cache moteur se retire.</p>
+          <p class="note-maquette" data-revele>La maquette reste une simplification : de nombreux petits éléments — durites, colliers, faisceaux électriques, capteurs, visserie — ne sont pas représentés.</p>
+        </div>
+      </div>
+      <div class="conteneur conteneur--large">
+        <div class="moteur3d" id="moteur3d" data-revele>
+          <div class="moteur3d__scene" id="moteur-scene"></div>
+          <div class="moteur3d__etiquettes" id="moteur-etiquettes" aria-hidden="true"></div>
+          <p class="moteur3d__survol" id="moteur-survol" aria-live="polite"></p>
+          <!-- Mode accélération : rapport engagé et régime simulés -->
+          <div class="moteur3d__simulation" id="moteur-simulation" hidden>
+            <p>Simulation · <span data-rapport>point mort</span></p>
+            <div class="moteur3d__regime" aria-hidden="true"><span data-regime></span></div>
+          </div>
+          <!-- Compteur pendant la simulation (moteur-3d.js) : vitesse et régime -->
+          <div class="moteur3d__compteur" id="moteur-compteur" hidden><svg viewBox="0 0 320 150" aria-hidden="true"><circle cx="85" cy="78" r="66" class="compteur__fond"/><line class="compteur__trait" x1="36.7" y1="118.5" x2="44.4" y2="112.1"/><line class="compteur__trait" x1="25.2" y1="97.8" x2="29.9" y2="96.2"/><line class="compteur__trait" x1="22.1" y1="74.3" x2="32.1" y2="74.9"/><text class="compteur__chiffre" x="41.1" y="78.4">40</text><line class="compteur__trait" x1="27.9" y1="51.4" x2="32.4" y2="53.5"/><line class="compteur__trait" x1="41.8" y1="32.2" x2="48.6" y2="39.4"/><text class="compteur__chiffre" x="54.8" y="49.0">80</text><line class="compteur__trait" x1="61.7" y1="19.5" x2="63.6" y2="24.1"/><line class="compteur__trait" x1="85.0" y1="15.0" x2="85.0" y2="25.0"/><text class="compteur__chiffre" x="85.0" y="37.0">120</text><line class="compteur__trait" x1="108.3" y1="19.5" x2="106.4" y2="24.1"/><line class="compteur__trait" x1="128.2" y1="32.2" x2="121.4" y2="39.4"/><text class="compteur__chiffre" x="115.2" y="49.0">160</text><line class="compteur__trait" x1="142.1" y1="51.4" x2="137.6" y2="53.5"/><line class="compteur__trait" x1="147.9" y1="74.3" x2="137.9" y2="74.9"/><text class="compteur__chiffre" x="128.9" y="78.4">200</text><line class="compteur__trait" x1="144.8" y1="97.8" x2="140.1" y2="96.2"/><line class="compteur__trait" x1="133.3" y1="118.5" x2="125.6" y2="112.1"/><text class="compteur__chiffre" x="118.7" y="109.3">240</text><circle cx="235" cy="78" r="66" class="compteur__fond"/><path class="compteur__rouge" d="M290.9 99.9 A60 60 0 0 1 281.0 116.6"/><line class="compteur__trait" x1="186.7" y1="118.5" x2="194.4" y2="112.1"/><line class="compteur__trait" x1="176.4" y1="101.0" x2="181.0" y2="99.2"/><line class="compteur__trait" x1="172.1" y1="81.1" x2="182.1" y2="80.6"/><text class="compteur__chiffre" x="191.1" y="83.2">1</text><line class="compteur__trait" x1="174.4" y1="60.9" x2="179.2" y2="62.3"/><line class="compteur__trait" x1="182.9" y1="42.5" x2="191.2" y2="48.1"/><text class="compteur__chiffre" x="198.6" y="56.2">2</text><line class="compteur__trait" x1="197.0" y1="27.8" x2="200.0" y2="31.8"/><line class="compteur__trait" x1="214.9" y1="18.3" x2="218.1" y2="27.8"/><text class="compteur__chiffre" x="221.0" y="39.3">3</text><line class="compteur__trait" x1="235.0" y1="15.0" x2="235.0" y2="20.0"/><line class="compteur__trait" x1="255.1" y1="18.3" x2="251.9" y2="27.8"/><text class="compteur__chiffre" x="249.0" y="39.3">4</text><line class="compteur__trait" x1="273.0" y1="27.8" x2="270.0" y2="31.8"/><line class="compteur__trait" x1="287.1" y1="42.5" x2="278.8" y2="48.1"/><text class="compteur__chiffre" x="271.4" y="56.2">5</text><line class="compteur__trait" x1="295.6" y1="60.9" x2="290.8" y2="62.3"/><line class="compteur__trait" x1="297.9" y1="81.1" x2="287.9" y2="80.6"/><text class="compteur__chiffre" x="278.9" y="83.2">6</text><line class="compteur__trait" x1="293.6" y1="101.0" x2="289.0" y2="99.2"/><line class="compteur__trait" x1="283.3" y1="118.5" x2="275.6" y2="112.1"/><text class="compteur__chiffre" x="268.7" y="109.3">7</text><text class="compteur__unite" x="85" y="112">km/h</text><text class="compteur__unite" x="235" y="104">1/min x1000</text><text class="compteur__vitesse" x="85" y="132" data-vitesse>0 km/h</text><g transform="translate(85 78)"><g data-aiguille="vitesse" transform="rotate(-130)"><line class="compteur__aiguille" x1="0" y1="10" x2="0" y2="-54"/></g><circle r="6" class="compteur__axe"/></g><g transform="translate(235 78)"><g data-aiguille="regime" transform="rotate(-130)"><line class="compteur__aiguille" x1="0" y1="10" x2="0" y2="-54"/></g><circle r="6" class="compteur__axe"/></g></svg></div>
+          <!-- Légende des couleurs des fluides -->
+          <ul class="moteur3d__fluides" id="moteur-fluides" aria-label="Couleurs des fluides" hidden>
+            <li class="moteur3d__fluide moteur3d__fluide--refroidissement">Liquide de refroidissement</li>
+            <li class="moteur3d__fluide moteur3d__fluide--carburant">Carburant (départ)</li>
+            <li class="moteur3d__fluide moteur3d__fluide--retour">Carburant (retour au réservoir)</li>
+            <li class="moteur3d__fluide moteur3d__fluide--huile">Huile moteur</li>
+            <li class="moteur3d__fluides-note">Ils circulent quand le moteur tourne (bouton Accélération).</li>
+          </ul>
+          <!-- Panneau d'affichage : groupes d'éléments à montrer ou masquer -->
+          <details class="moteur3d__calques" id="moteur-calques">
+            <summary><svg aria-hidden="true"><use href="#i-calques"/></svg>Affichage</summary>
+            <fieldset>
+              <legend class="visuellement-cache">Éléments affichés sur la maquette</legend>
+              <label><input type="checkbox" data-groupe="carrosserie" checked /> Carrosserie</label>
+              <label><input type="checkbox" data-groupe="moteur" checked /> Moteur</label>
+              <label><input type="checkbox" data-groupe="admission" checked /> Admission</label>
+              <label><input type="checkbox" data-groupe="refroidissement" checked /> Refroidissement</label>
+              <label><input type="checkbox" data-groupe="echappement" checked /> Échappement</label>
+              <label><input type="checkbox" data-groupe="transmission" checked /> Transmission</label>
+              <label><input type="checkbox" data-groupe="carburant" checked /> Carburant</label>
+              <label><input type="checkbox" data-groupe="freinage" checked /> Freinage et pédales</label>
+              <label><input type="checkbox" data-groupe="chassis" checked /> Châssis et roues</label>
+              <label><input type="checkbox" data-groupe="accessoires" checked /> Accessoires</label>
+              <span class="moteur3d__calques-separateur" aria-hidden="true"></span>
+              <label><input type="checkbox" data-option="cache" checked /> Cache moteur</label>
+              <label><input type="checkbox" data-option="transparence" /> Carrosserie transparente</label>
+              <label><input type="checkbox" data-option="fluides" /> Fluides</label>
+            </fieldset>
+          </details>
+          <div class="moteur3d__zoom">
+            <button type="button" data-plein-ecran aria-label="Plein écran" aria-pressed="false"><svg aria-hidden="true"><use href="#i-plein-ecran"/></svg></button>
+          </div>
+          <!-- Flèches pour pivoter la maquette (moteur-3d.js) -->
+          <div class="moteur3d__pivot" role="group" aria-label="Déplacer la vue">
+            <button type="button" data-pivot="0,-1" aria-label="Pivoter vers le haut"><svg aria-hidden="true"><use href="#i-fleche"/></svg></button>
+            <button type="button" data-pivot="-1,0" aria-label="Pivoter vers la gauche"><svg aria-hidden="true"><use href="#i-fleche"/></svg></button>
+            <button type="button" data-pivot="1,0" aria-label="Pivoter vers la droite"><svg aria-hidden="true"><use href="#i-fleche"/></svg></button>
+            <button type="button" data-pivot="0,1" aria-label="Pivoter vers le bas"><svg aria-hidden="true"><use href="#i-fleche"/></svg></button>
+            <button type="button" data-hauteur="1" aria-label="Monter"><svg aria-hidden="true"><use href="#i-fleche"/></svg></button>
+            <button type="button" data-hauteur="-1" aria-label="Descendre"><svg aria-hidden="true"><use href="#i-fleche"/></svg></button>
+            <button type="button" data-zoom="1" aria-label="Zoomer"><svg aria-hidden="true"><use href="#i-plus"/></svg></button>
+            <button type="button" data-zoom="-1" aria-label="Dézoomer"><svg aria-hidden="true"><use href="#i-moins"/></svg></button>
+            <button type="button" data-zoom="0" aria-label="Recentrer la vue"><svg aria-hidden="true"><use href="#i-recentrer"/></svg></button>
+          </div>
+          <div class="moteur3d__repli" id="moteur-repli">
+            <p>Chargement de la vue 3D…</p>
+          </div>
+          <div class="moteur3d__barre">
+            <div class="moteur3d__commandes">
+              <button class="bouton magnetique" id="bouton-eclate" type="button" aria-pressed="false">
+                <span class="bouton__texte"><svg aria-hidden="true"><use href="#i-eclate"/></svg><span data-libelle>VUE ÉCLATÉE</span></span>
+              </button>
+              <button class="bouton bouton--clair" id="bouton-rotation" type="button" aria-pressed="false">
+                <span class="bouton__texte"><svg aria-hidden="true"><use href="#i-rotation"/></svg><span data-libelle>FIGER LA ROTATION</span></span>
+              </button>
+              <button class="bouton bouton--clair" id="bouton-voiture" type="button" aria-pressed="true">
+                <span class="bouton__texte"><svg aria-hidden="true"><use href="#i-voiture"/></svg><span data-libelle>MASQUER LA VOITURE</span></span>
+              </button>
+              <button class="bouton bouton--clair" id="bouton-acceleration" type="button" aria-pressed="false">
+                <span class="bouton__texte"><svg aria-hidden="true"><use href="#i-acceleration"/></svg><span>ACCÉLÉRATION</span></span>
+              </button>
+              <button class="bouton bouton--clair" id="bouton-interieur" type="button" aria-pressed="false">
+                <span class="bouton__texte"><svg aria-hidden="true"><use href="#i-interieur"/></svg><span data-libelle>VUE INTÉRIEURE</span></span>
+              </button>
+              <button class="bouton bouton--clair" id="bouton-fluides" type="button" aria-pressed="false">
+                <span class="bouton__texte"><svg aria-hidden="true"><use href="#i-goutte"/></svg><span>FLUIDES</span></span>
+              </button>
+              <button class="bouton bouton--clair" type="button" data-ouvrants aria-pressed="false">
+                <span class="bouton__texte"><svg aria-hidden="true"><use href="#i-portes"/></svg><span data-libelle>TOUT OUVRIR</span></span>
+              </button>
+              <button class="bouton bouton--clair" id="bouton-numeros" type="button" aria-pressed="false">
+                <span class="bouton__texte"><svg aria-hidden="true"><use href="#i-points"/></svg><span data-libelle>MASQUER LES NUMÉROS</span></span>
+              </button>
+              <button class="bouton bouton--clair" id="bouton-cache" type="button" aria-pressed="false">
+                <span class="bouton__texte"><svg aria-hidden="true"><use href="#i-cache"/></svg><span data-libelle>RETIRER LE CACHE</span></span>
+              </button>
+            </div>
+            <p class="moteur3d__legende">M54B22 — 6 cylindres en ligne, 2.2L</p>
+            <p class="moteur3d__aide">Clic gauche : tourner · clic droit : déplacer · cliquez puis molette, ou pincez, pour zoomer · survolez ou touchez une pièce</p>
+            <p class="moteur3d__mention">Carrosserie : modèle « BMW E39 Free » de Black Snow (CC BY 4.0), ramené à ma 520i — mécanique modélisée pour ce site</p>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- ══ Fil rouge ══ -->
+    <section class="section fil-rouge" id="fil-rouge" data-etape="La méthode" aria-labelledby="fil-titre">
+      <div class="conteneur">
+        <div class="entete-section">
+          <p class="partie-badge" data-revele>Partie 2 · La remise en état · août au 25/11/2026</p>
+          <p class="surtitre" data-revele>La méthode</p>
+          <h2 class="titre-section" id="fil-titre" data-mots>Mesure, hypothèse, <em>vérification.</em></h2>
+          <p data-revele>Une seule modification à la fois, puis relecture des valeurs avant de conclure. C'est la règle qui évite de remplacer trois pièces pour une panne qui n'en demandait qu'une.</p>
+
+          <div class="en-simple" data-revele>
+            <p class="en-simple__titre">En simple</p>
+            <p>À l'achat, le moteur respirait de l'air par une fissure : le calculateur devait ajouter de l'essence pour compenser. J'ai mesuré, cherché, réparé, puis remesuré. Une seule réparation à la fois, pour savoir laquelle a vraiment marché.</p>
+          </div>
+        </div>
+        <ol class="methode" data-cascade>
+          <li data-revele>
+            <span class="methode__etape">01 · Mesure</span>
+            <p>Le calculateur ajoute de l'essence des deux côtés : <strong>+8,6 % / +6,3 %</strong> au ralenti fin septembre, et environ <strong>+6,8 % / +4,6 %</strong> en moyenne sur le roulage du 08/10. Codes P0171 et P0174 : mélange trop pauvre.</p>
+          </li>
+          <li data-revele>
+            <span class="methode__etape">02 · Hypothèse</span>
+            <p>Le banc 1 a environ 2 points d'avance : une <strong>prise d'air côté banc 1</strong>. Le débitmètre de 2001 lit moins d'air qu'attendu à fort débit (environ 7 %, estimé) : un <strong>contributeur commun</strong>.</p>
+          </li>
+          <li data-revele>
+            <span class="methode__etape">03 · Vérification</span>
+            <p>Test fumée le 14/10 : la fuite est au <strong>manchon d'admission</strong>, légèrement fissuré, que je resserre avec un collier Rilsan. Avec le débitmètre neuf et le joint DISA remplacé : <strong>0 % / 0 %</strong> au relevé suivant.</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+    <!-- ══ Les chantiers ══ -->
+    <section class="section chantiers volet" id="chantiers" data-volet data-etape="Les chantiers" aria-labelledby="chantiers-titre">
+      <span class="mot-fond" data-glisse="0.35" aria-hidden="true">Atelier</span>
+      <div class="conteneur">
+        <div class="entete-section">
+          <p class="surtitre" data-revele>Les chantiers</p>
+          <h2 class="titre-section" id="chantiers-titre" data-mots>Ce qui a été <em>fait.</em></h2>
+        </div>
+
+        <div class="timeline chantiers__liste" data-timeline>
+          <span class="timeline__trait" aria-hidden="true"></span>
+          <ol>
+
+            <!-- ══ Août 2026 ══ -->
+            <li class="timeline__mois"><h3>Août 2026</h3></li>
+
+            <!-- Achat -->
+            <li class="etape chantier" data-revele>
+              <p class="etape__date">16/08/2026</p>
+              <h4>L'achat</h4>
+              <div class="chantier__corps">
+                <div>
+                  <p>Une 520i phase 2 de 2002, boîte manuelle, achetée à environ <strong>164 000 km</strong>. Pas de rouille, des factures d'entretien, et un contrôle technique passé proprement après l'achat.</p>
+                  <p>Le 23/08, premières captures du VANOS en direct.</p>
+                  <details class="repli">
+                    <summary>Les défauts connus à l'achat</summary>
+                    <ul class="repli__liste">
+                      <li>Plastiques de réglage des phares cassés.</li>
+                      <li>Défaut du capteur de position d'arbre à cames.</li>
+                      <li>Plastique du bouton d'antibrouillard déclipsé.</li>
+                    </ul>
+                  </details>
+                </div>
+                <ul class="chantier__refs" aria-label="Repères">
+                  <li>Première immatriculation · 21/08/2002</li>
+                  <li>Moteur M54B22 · calculateur Siemens MS43</li>
+                </ul>
+              </div>
+            </li>
+
+            <!-- Vidange et capteur d'arbre à cames -->
+            <li class="etape chantier" data-revele>
+              <p class="etape__date">Vers le 23/08/2026 · 164 292 km</p>
+              <h4>Vidange et capteur d'arbre à cames d'échappement</h4>
+              <div class="chantier__corps">
+                <div>
+                  <p>Vidange à <strong>164 292 km</strong> : moteur rincé au <strong>Liqui Moly Engine Flush</strong> (300 ml), puis huile <strong>Motul 8100 X-cess 5W40</strong> avec un filtre <strong>Mann-Filter HU 925/4 x</strong>, et additif céramique <strong>Liqui Moly Cera Tec 3721</strong>.</p>
+                  <p>Au même moment, le capteur de position d'arbre à cames d'échappement, en défaut à l'achat, est remplacé par un <strong>Hella 6PU 009 121-701</strong>.</p>
+                </div>
+                <ul class="chantier__refs" aria-label="Références">
+                  <li>Huile · Motul 8100 X-cess 5W40</li>
+                  <li>Filtre à huile · Mann-Filter HU 925/4 x</li>
+                  <li>Rinçage · Liqui Moly Engine Flush 300 ml</li>
+                  <li>Additif · Liqui Moly Cera Tec 3721</li>
+                  <li>Capteur · Hella 6PU 009 121-701</li>
+                </ul>
+              </div>
+              <div class="chantier__galerie chantier__galerie--produits" aria-label="Les produits de la vidange">
+                <figure><img src="img/pieces-montees/engine-flush-320.png" data-grande="img/pieces-montees/engine-flush.png" loading="lazy" alt="Bidon de Liqui Moly Engine Flush, 300 ml" /><figcaption>Engine Flush, avant la vidange.</figcaption></figure>
+                <figure><img src="img/pieces-montees/huile-motul-320.png" data-grande="img/pieces-montees/huile-motul.png" loading="lazy" alt="Bidon d'huile Motul 8100 X-cess 5W40" /><figcaption>Motul 8100 X-cess 5W40.</figcaption></figure>
+                <figure><img src="img/pieces-montees/cera-tec-320.png" data-grande="img/pieces-montees/cera-tec.png" loading="lazy" alt="Flacon et boîte de Liqui Moly Cera Tec, 300 ml" /><figcaption>Cera Tec 3721.</figcaption></figure>
+                <figure><img src="img/pieces-montees/capteur-aac-echappement-320.png" data-grande="img/pieces-montees/capteur-aac-echappement.png" loading="lazy" alt="Capteur Hella de position d'arbre à cames, avec sa boîte" /><figcaption>Capteur Hella 6PU 009 121-701.</figcaption></figure>
+              </div>
+            </li>
+
+            <!-- Filtre à essence et durites -->
+            <li class="etape chantier" data-revele>
+              <p class="etape__date">Fin août 2026 · quelques jours après la vidange</p>
+              <h4>Filtre à essence Purflux EP200 et durites</h4>
+              <div class="chantier__corps chantier__corps--photo">
+                <div>
+                  <p>Quelques jours après la vidange : <strong>filtre à essence Purflux EP200</strong> à régulateur intégré, avec <strong>3 durites neuves</strong> et leurs colliers.</p>
+                  <p>Entretien prévu ensuite : un filtre à essence chaque année.</p>
+                </div>
+                <figure class="chantier__photo">
+                  <img src="img/e39/filtre-essence-purflux-960.jpg" srcset="img/e39/filtre-essence-purflux-480.jpg 480w, img/e39/filtre-essence-purflux-960.jpg 960w, img/e39/filtre-essence-purflux.jpg 1600w" sizes="(max-width: 1039px) 100vw, 360px" data-grande="img/e39/filtre-essence-purflux.jpg" width="1600" height="901" loading="lazy" alt="Sous la caisse : le filtre à essence cylindrique noir, ses durites neuves et leurs colliers, le long des conduites métalliques" />
+                  <figcaption>Photo réelle : le filtre Purflux et ses durites neuves, sous la voiture.</figcaption>
+                </figure>
+              </div>
+            </li>
+
+            <!-- ══ Septembre 2026 ══ -->
+            <li class="timeline__mois"><h3>Septembre 2026</h3></li>
+
+            <!-- Mélange pauvre : premiers codes -->
+            <li class="etape chantier" data-revele>
+              <p class="etape__date">Fin août · septembre 2026</p>
+              <h4>Les premiers codes : mélange pauvre</h4>
+              <div class="chantier__corps">
+                <div>
+                  <p>La valise V519 affiche <strong>P0171</strong> et <strong>P0174</strong> : mélange pauvre sur les deux bancs. Le calculateur ajoute de l'essence pour compenser de l'air qui entre quelque part.</p>
+                  <ul class="chiffres-cles">
+                    <li><strong>+8,6 %</strong><span>correction banc 1 au ralenti</span></li>
+                    <li><strong>+6,3 %</strong><span>correction banc 2 au ralenti</span></li>
+                    <li><strong>+12,5 %</strong><span>jusqu'à cette valeur en charge</span></li>
+                  </ul>
+                  <p>Le 27/09, recherche sur la pompe à essence AEM 340, compatible E85, avant de la commander.</p>
+                </div>
+              </div>
+            </li>
+
+            <!-- Autoradio bloqué -->
+            <li class="etape chantier" data-revele>
+              <p class="etape__date">03/09/2026</p>
+              <h4>Autoradio bloqué : tableau de bord démonté</h4>
+              <div class="chantier__corps chantier__corps--photo">
+                <div>
+                  <p>L'autoradio d'origine était bloqué. Pour le débloquer, la façade du tableau de bord et la garniture de porte sont démontées.</p>
+                </div>
+                <figure class="chantier__photo">
+                  <img src="img/e39/tableau-de-bord-autoradio-960.jpg" srcset="img/e39/tableau-de-bord-autoradio-480.jpg 480w, img/e39/tableau-de-bord-autoradio-960.jpg 960w, img/e39/tableau-de-bord-autoradio.jpg 1600w" sizes="(max-width: 1039px) 100vw, 360px" data-grande="img/e39/tableau-de-bord-autoradio.jpg" width="1600" height="1627" loading="lazy" alt="L'habitacle vu par la portière ouverte : façade du tableau de bord déposée, faisceaux à nu derrière le volant, outils et câbles sur le siège" />
+                  <figcaption>Photo réelle : le tableau de bord démonté pour débloquer l'autoradio.</figcaption>
+                </figure>
+              </div>
+            </li>
+
+            <!-- ══ Octobre 2026 ══ -->
+            <li class="timeline__mois"><h3>Octobre 2026</h3></li>
+
+            <!-- Pompe à essence -->
+            <li class="etape chantier" data-revele>
+              <p class="etape__date">03/10/2026</p>
+              <h4>Pompe à essence AEM 340 L/h</h4>
+              <div class="chantier__corps">
+                <div>
+                  <p>La pompe d'origine fatiguait : démarrages difficiles, plusieurs coups de clé, perte de puissance. Le diagnostic n'a pas été fait au doigt mouillé : la pression de rampe a été vérifiée au <strong>kit manomètre</strong> — trop basse.</p>
+                  <p>Remplacement par une AEM 340 L/h (réf. 50-1220), choisie pour sa compatibilité E85. Un calage juste après le montage venait des raccords sertis faits maison, pas de la pompe. Depuis : ralenti normal, reprises meilleures.</p>
+                  <p class="chantier__lecon"><strong>Leçon :</strong> jamais de raccordement sur le faisceau d'origine sans adaptateur — une polarité inversée fait tourner la pompe à l'envers.</p>
+                </div>
+                <ul class="chantier__refs" aria-label="Références">
+                  <li>AEM 340 L/h · 50-1220</li>
+                  <li>Pression attendue : ~3,5 bar (spécification)</li>
+                </ul>
+              </div>
+              <div class="chantier__galerie" aria-label="Photos réelles du 03/10">
+                <figure><img src="img/e39/pompe-essence-trappe-480.jpg" srcset="img/e39/pompe-essence-trappe-480.jpg 480w, img/e39/pompe-essence-trappe-960.jpg 960w, img/e39/pompe-essence-trappe.jpg 1600w" sizes="(max-width: 719px) 50vw, 200px" data-grande="img/e39/pompe-essence-trappe.jpg" width="1600" height="901" loading="lazy" alt="La trappe sous la banquette arrière ouverte : le module de pompe et de jauge d'origine en place, avec son connecteur et sa durite" /><figcaption>17h42 : accès à la pompe par la trappe sous la banquette.</figcaption></figure>
+                <figure><img src="img/e39/pompe-essence-module-480.jpg" srcset="img/e39/pompe-essence-module-480.jpg 480w, img/e39/pompe-essence-module-960.jpg 960w, img/e39/pompe-essence-module.jpg 1600w" sizes="(max-width: 719px) 50vw, 200px" data-grande="img/e39/pompe-essence-module.jpg" width="1600" height="2844" loading="lazy" alt="Le module de pompe et de jauge déposé sur une table, câblage refait avec de la gaine thermorétractable" /><figcaption>21h08 : le module démonté pour poser la pompe AEM 340, compatible E85.</figcaption></figure>
+              </div>
+            </li>
+
+            <!-- Diagnostic mélange pauvre -->
+            <li class="etape chantier" data-revele>
+              <p class="etape__date">08 — 09/10/2026</p>
+              <h4>Diagnostic du mélange pauvre</h4>
+              <div class="chantier__corps chantier__corps--photo">
+                <div>
+                  <p>Le 08/10, le câble K+DCAN arrive (commandé début octobre) : premiers logs du calculateur. Log complet (MS430DS0, environ 110 points) et lectures à la valise V519. Les corrections carburant montent des deux côtés, le banc 1 devant.</p>
+                  <ul class="chiffres-cles">
+                    <li><strong>42 %</strong><span>ouverture des injecteurs à 4 646 tr/min : sains, loin du seuil de 85 %</span></li>
+                    <li><strong>125 g/s</strong><span>débit d'air maximal lu (à 6 313 tr/min), contre 128 à 140 g/s attendus : le débitmètre sous-lit</span></li>
+                    <li><strong>+2 pts</strong><span>d'écart banc 1 / banc 2 : le signe d'une prise d'air localisée</span></li>
+                  </ul>
+                  <p>Les deux causes coexistent sans se contredire : une prise d'air côté banc 1 et un débitmètre vieilli. Le test fumée tranchera la première ; un débitmètre neuf, la seconde.</p>
+                </div>
+                <figure class="chantier__photo">
+                  <img src="img/e39/v519-p0171.jpg" width="640" height="1137" loading="lazy" alt="Valise OBD II V519 branchée sur la voiture, écran Code d'erreur : P0171 System Too Lean Bank 1" />
+                  <figcaption>Photo réelle : le code P0171 lu au V519.</figcaption>
+                </figure>
+              </div>
+              <div class="chantier__galerie" aria-label="Photos réelles du 08/10">
+                <figure><img src="img/e39/cable-kdcan-480.jpg" srcset="img/e39/cable-kdcan-480.jpg 480w, img/e39/cable-kdcan-960.jpg 960w, img/e39/cable-kdcan.jpg 1600w" sizes="(max-width: 719px) 50vw, 200px" data-grande="img/e39/cable-kdcan.jpg" width="1600" height="2844" loading="lazy" alt="Le câble « K+DCAN USB Interface (INPA Compatible) » tenu en main, avec son interrupteur" /><figcaption>08/10 : le câble K+DCAN reçu, avec son interrupteur K-Line / D-CAN.</figcaption></figure>
+                <figure><img src="img/e39/cable-kdcan-prise-obd-480.jpg" srcset="img/e39/cable-kdcan-prise-obd-480.jpg 480w, img/e39/cable-kdcan-prise-obd-960.jpg 960w, img/e39/cable-kdcan-prise-obd.jpg 1600w" sizes="(max-width: 719px) 50vw, 200px" data-grande="img/e39/cable-kdcan-prise-obd.jpg" width="1600" height="2844" loading="lazy" alt="La prise OBD-II à 16 broches du câble, vue de face" /><figcaption>La prise OBD-II à 16 broches de l'interface.</figcaption></figure>
+              </div>
+            </li>
+
+            <!-- Vanne de ralenti -->
+            <li class="etape chantier" data-revele>
+              <p class="etape__date">11/10/2026</p>
+              <h4>Nettoyage de la vanne de ralenti (ICV)</h4>
+              <div class="chantier__corps">
+                <div>
+                  <p>La vanne de ralenti Bosch, logée sous l'admission, est déposée pour être nettoyée.</p>
+                </div>
+              </div>
+              <div class="chantier__galerie" aria-label="Photos réelles du 11/10">
+                <figure><img src="img/e39/icv-acces-admission-480.jpg" srcset="img/e39/icv-acces-admission-480.jpg 480w, img/e39/icv-acces-admission-960.jpg 960w, img/e39/icv-acces-admission.jpg 1600w" sizes="(max-width: 719px) 50vw, 200px" data-grande="img/e39/icv-acces-admission.jpg" width="1600" height="2842" loading="lazy" alt="Le compartiment moteur côté admission, pendant la dépose de la vanne de ralenti" /><figcaption>L'accès à l'ICV, sous l'admission.</figcaption></figure>
+                <figure><img src="img/e39/icv-deposee-480.jpg" srcset="img/e39/icv-deposee-480.jpg 480w, img/e39/icv-deposee-960.jpg 960w, img/e39/icv-deposee.jpg 1600w" sizes="(max-width: 719px) 50vw, 200px" data-grande="img/e39/icv-deposee.jpg" width="1600" height="2842" loading="lazy" alt="La vanne de ralenti Bosch déposée, posée au sol" /><figcaption>La vanne de ralenti déposée pour nettoyage.</figcaption></figure>
+              </div>
+            </li>
+
+            <!-- Débitmètre + DISA -->
+            <li class="etape chantier" data-revele>
+              <p class="etape__date">13/10/2026</p>
+              <h4>Débitmètre neuf et joint DISA</h4>
+              <div class="chantier__corps">
+                <div>
+                  <p>Le débitmètre d'origine Siemens 5WK9 605 (BMW 13 62 1 432 356), daté de 2001, est remplacé par un <strong>Pierburg 7.07759.09.0</strong>. Le même soir, le joint de la DISA — légèrement aplati — est changé.</p>
+                  <p>Correction long terme du jour (LTFT) : <strong>+3,1 % / 0,0 %</strong>. Le banc 2 est revenu à zéro, le banc 1 garde un reste : la prise d'air n'est pas encore trouvée.</p>
+                </div>
+                <ul class="chantier__refs" aria-label="Références">
+                  <li>Débitmètre neuf · Pierburg 7.07759.09.0</li>
+                  <li>Ancien · Siemens 5WK9 605 (2001)</li>
+                </ul>
+              </div>
+              <figure class="schema" data-revele>
+                <!-- Schéma A2 : admission et débitmètre -->
+                <svg class="sch sch-admission" viewBox="0 0 640 200" role="img" aria-label="Schéma animé de l'admission : l'air traverse le filtre, le débitmètre, le manchon, le papillon puis le collecteur vers les six cylindres">
+                  <path class="sch-conduit" d="M20 100 H600"/>
+                  <path class="sch-flux" d="M20 100 H600"/>
+                  <rect class="sch-piece" x="30" y="70" width="70" height="60" rx="8"/><text class="sch-texte" x="65" y="152">Filtre</text>
+                  <rect class="sch-piece sch-piece--accent" x="140" y="76" width="80" height="48" rx="8"/><path class="sch-film" d="M180 84 V116"/><text class="sch-texte" x="180" y="152">Débitmètre</text>
+                  <path class="sch-piece sch-manchon" d="M250 82 q20 -14 40 0 v36 q-20 14 -40 0 z"/><text class="sch-texte" x="270" y="152">Manchon</text>
+                  <circle class="sch-piece" cx="340" cy="100" r="24"/><path class="sch-papillon" d="M340 80 V120"/><text class="sch-texte" x="340" y="152">Papillon</text>
+                  <rect class="sch-piece" x="390" y="56" width="110" height="88" rx="10"/><text class="sch-texte" x="445" y="104">Collecteur</text>
+                  <g class="sch-cylindres"><rect x="520" y="40" width="14" height="22" rx="3"/><rect x="540" y="40" width="14" height="22" rx="3"/><rect x="560" y="40" width="14" height="22" rx="3"/><rect x="520" y="138" width="14" height="22" rx="3"/><rect x="540" y="138" width="14" height="22" rx="3"/><rect x="560" y="138" width="14" height="22" rx="3"/></g>
+                  <text class="sch-valeur" x="180" y="48" data-debit>2,8 g/s</text>
+                  <text class="sch-texte sch-texte--petit" x="180" y="26" data-debit-regime>au ralenti</text>
+                </svg>
+                <figcaption>Le débitmètre mesure la masse d'air : environ <strong>2,8 g/s</strong> au ralenti et <strong>125 g/s</strong> au maximum, à pleine charge (logs du 08/10, ancien débitmètre).</figcaption>
+              </figure>
+              <figure class="schema" data-revele>
+                <!-- Schéma A3 : la DISA -->
+                <svg class="sch sch-disa" viewBox="0 0 640 220" role="img" aria-label="Schéma animé de la DISA : le volet fermé impose un long chemin à l'air pour le couple à bas régime ; ouvert, il raccourcit le chemin pour la puissance à haut régime">
+                  <path class="sch-conduit" d="M40 110 H200 C260 110 260 30 320 30 H440 C500 30 500 110 560 110 H600"/>
+                  <path class="sch-conduit" d="M200 110 H560"/>
+                  <path class="sch-flux sch-flux--long" d="M40 110 H200 C260 110 260 30 320 30 H440 C500 30 500 110 560 110 H600"/>
+                  <path class="sch-flux sch-flux--court" d="M200 110 H560"/>
+                  <g class="sch-volet"><rect class="sch-piece sch-piece--accent" x="376" y="88" width="8" height="44" rx="3"/></g>
+                  <circle class="sch-axe" cx="380" cy="110" r="5"/>
+                  <text class="sch-texte" x="380" y="160">Volet DISA</text>
+                  <text class="sch-texte sch-disa__regime sch-disa__regime--bas" x="320" y="200">Volet fermé · bas régime · chemin long = couple</text>
+                  <text class="sch-texte sch-disa__regime sch-disa__regime--haut" x="320" y="200">Volet ouvert · vers 4 000 tr/min · chemin court = puissance</text>
+                </svg>
+                <figcaption>La DISA change la longueur du chemin de l'air. Son joint aplati était un candidat côté banc 1 : remplacé le 13/10.</figcaption>
+              </figure>
+            </li>
+
+            <!-- Test fumée -->
+            <li class="etape chantier" data-revele>
+              <p class="etape__date">14/10/2026</p>
+              <h4>Test fumée : la fuite est trouvée</h4>
+              <div class="chantier__corps">
+                <div>
+                  <p>Avec la machine à fumée d'un ami, moteur froid et arrêté, durite obturée côté filtre : la fumée suit le chemin de l'air et ressort là où l'air non mesuré entrait. Verdict : <strong>fuite au manchon d'admission</strong>, légèrement fissuré.</p>
+                  <p>Pas de pièce neuve : je serre le manchon avec un <strong>collier Rilsan</strong>. Une réparation de fortune, mais qui tient très bien dans le temps. L'air qui entrait sans passer par le débitmètre ne fausse plus le dosage.</p>
+                </div>
+                <ul class="chantier__refs" aria-label="Zones inspectées">
+                  <li>Manchon débitmètre → papillon : <strong>fuite</strong></li>
+                  <li>Joint DISA · durites CCV · bouchons du collecteur · tube de jauge</li>
+                  <li>Réparation · collier Rilsan sur le manchon d'origine</li>
+                </ul>
+              </div>
+            </li>
+
+            <!-- Refroidissement -->
+            <li class="etape chantier" data-revele>
+              <p class="etape__date">18/10/2026</p>
+              <h4>Réfection complète du refroidissement</h4>
+              <div class="chantier__corps">
+                <div>
+                  <p>Le 2 octobre, le liquide s'échappait par le bouchon à chaud : un bouchon neuf de 1,4 bar qui ventile, c'est une surpression réelle. Le radiateur fuyait — patch époxy le 6 octobre, en attendant les pièces.</p>
+                  <p>Le kit complet est monté : <strong>radiateur Nissens 60648A</strong>, <strong>pompe à eau Meyle 313 011 2001</strong>, <strong>thermostat Mahle TM 13 97</strong>, puis purge soigneuse du circuit.</p>
+                </div>
+                <ul class="chantier__refs" aria-label="Références">
+                  <li>Radiateur · Nissens 60648A</li>
+                  <li>Pompe à eau · Meyle 313 011 2001</li>
+                  <li>Thermostat · Mahle TM 13 97</li>
+                </ul>
+              </div>
+              <figure class="schema" data-revele>
+                <!-- Schéma A1 : circuit de refroidissement -->
+                <svg class="sch sch-refroidissement" viewBox="0 0 640 260" role="img" aria-label="Schéma animé du circuit de refroidissement : la pompe à eau envoie le liquide dans le moteur ; tant qu'il est froid, le thermostat reste fermé et le liquide tourne en petit circuit ; une fois chaud, le clapet s'ouvre et le liquide passe par le radiateur">
+                  <!-- Petit circuit (moteur froid) -->
+                  <path class="sch-conduit" d="M230 70 H330 V190 H230"/>
+                  <path class="sch-flux sch-flux--petit" d="M230 70 H330 V190 H230"/>
+                  <!-- Grand circuit vers le radiateur -->
+                  <path class="sch-conduit" d="M330 70 H470 M470 190 H330"/>
+                  <path class="sch-flux sch-flux--grand" d="M330 70 H470 M470 190 H330"/>
+                  <rect class="sch-piece" x="90" y="50" width="140" height="160" rx="14"/><text class="sch-texte" x="160" y="134">Moteur</text>
+                  <circle class="sch-piece" cx="160" cy="210" r="0"/>
+                  <g class="sch-pompe"><circle class="sch-piece sch-piece--accent" cx="230" cy="190" r="18"/><path class="sch-turbine" d="M230 176 V204 M216 190 H244"/></g>
+                  <text class="sch-texte" x="230" y="236">Pompe à eau</text>
+                  <rect class="sch-piece" x="312" y="52" width="36" height="36" rx="8"/><path class="sch-clapet" d="M318 70 H342"/>
+                  <text class="sch-texte" x="330" y="40">Thermostat</text>
+                  <rect class="sch-piece sch-radiateur" x="470" y="50" width="70" height="160" rx="10"/>
+                  <path class="sch-ailettes" d="M482 70 H528 M482 90 H528 M482 110 H528 M482 130 H528 M482 150 H528 M482 170 H528 M482 190 H528"/>
+                  <text class="sch-texte" x="505" y="236">Radiateur</text>
+                  <!-- Jauge de température -->
+                  <g class="sch-jauge" transform="translate(590 130)">
+                    <path class="sch-jauge__fond" d="M-34 0 A34 34 0 0 1 34 0"/>
+                    <path class="sch-jauge__aiguille" d="M0 0 L0 -28"/>
+                    <circle r="4" class="sch-axe"/>
+                    <text class="sch-texte sch-texte--petit" y="20">T° liquide</text>
+                  </g>
+                </svg>
+                <figcaption>Froid : clapet fermé, petit circuit. Chaud : la cire se dilate, le clapet s'ouvre, le radiateur entre en jeu. Sur le roulage du 08/10, le liquide est resté entre 83 et 98 °C.</figcaption>
+              </figure>
+              <div class="chantier__galerie" aria-label="Photo réelle du 18/10">
+                <figure><img src="img/e39/thermostat-pompe-eau-neufs-480.jpg" srcset="img/e39/thermostat-pompe-eau-neufs-480.jpg 480w, img/e39/thermostat-pompe-eau-neufs-960.jpg 960w, img/e39/thermostat-pompe-eau-neufs.jpg 1600w" sizes="(max-width: 719px) 50vw, 200px" data-grande="img/e39/thermostat-pompe-eau-neufs.jpg" width="1600" height="901" loading="lazy" alt="Le haut du moteur, courroie déposée : thermostat piloté Mahle et pompe à eau Meyle neufs, en place" /><figcaption>18/10 : thermostat piloté Mahle et pompe à eau Meyle neufs (préventif).</figcaption></figure>
+              </div>
+            </li>
+
+            <!-- Fin octobre : pneus et suivi -->
+            <li class="etape chantier" data-revele>
+              <p class="etape__date">23 · 31/10/2026</p>
+              <h4>Pneus et huile : les points à suivre</h4>
+              <div class="chantier__corps">
+                <div>
+                  <p>Les <strong>pneus arrière sont presque aux témoins</strong>, usés au centre (surgonflage). Leur remplacement passe en priorité ; en attendant, moins de 100 km/h.</p>
+                  <details class="repli">
+                    <summary>Le reste du suivi</summary>
+                    <ul class="repli__liste">
+                      <li>La voiture roule sur la roue de secours depuis le 10/10. Vibration à 110 km/h : la roue de secours est le premier suspect.</li>
+                      <li>Huile : consommation nulle en conduite normale. Une mesure après des passages au rupteur n'est pas valable (voiture penchée). Le recyclage des vapeurs d'huile (CCV) est soupçonné.</li>
+                      <li>27/10 : pas de nettoyage des pistons pour l'instant. Ordre retenu : jauge à froid sur sol plat, huile dans le manchon, puis compression.</li>
+                      <li>Bougies : NGK BKR6EQUP, 31 ± 2 Nm, filets secs (remplacées le 19/11 par des Denso IK20TT).</li>
+                    </ul>
+                  </details>
+                </div>
+              </div>
+            </li>
+
+            <!-- ══ Novembre 2026 ══ -->
+            <li class="timeline__mois"><h3>Novembre 2026</h3></li>
+
+            <!-- Diagnostic INPA -->
+            <li class="etape chantier" data-revele>
+              <p class="etape__date">06/11/2026</p>
+              <h4>Premier diagnostic complet au PC</h4>
+              <div class="chantier__corps">
+                <div>
+                  <p>INPA et un câble K+DCAN, en <strong>lecture seule</strong> : rien n'est effacé ni écrit. Un trajet de 20 km enregistré à 5 mesures par seconde. À chaud, le moteur est sain.</p>
+                  <ul class="chiffres-cles">
+                    <li><strong>8 074</strong><span>mesures sur le trajet, sans coupure</span></li>
+                    <li><strong>1,00</strong><span>correction lambda des deux bancs en roulant, moteur chaud</span></li>
+                    <li><strong>64,9 %</strong><span>ouverture maximale des injecteurs (12,18 ms à 6 399 tr/min)</span></li>
+                  </ul>
+                  <details class="repli">
+                    <summary>Les défauts trouvés</summary>
+                    <ul class="repli__liste">
+                      <li><strong>Ratés cylindres 4 et 5</strong>, à froid seulement, intermittents.</li>
+                      <li>Sonde de sortie de radiateur à −48 °C en permanence (innocentée le 13/11).</li>
+                      <li>Mélange riche banc 1, mémorisé une fois au ralenti à 66 °C.</li>
+                      <li>Transpondeurs des clés 0 et 2 faibles, LED d'alarme en coupure, capteur de recyclage d'air en coupure.</li>
+                    </ul>
+                  </details>
+                  <details class="repli">
+                    <summary>Ce qui va bien</summary>
+                    <ul class="repli__liste">
+                      <li>VANOS actif des deux côtés : admission de 112° à 81°, échappement de −105° à −87°.</li>
+                      <li>Moteur entre 93 et 97 °C, huile à 100 °C au maximum, batterie entre 13,6 et 13,9 V en roulant.</li>
+                      <li>Ralenti stable à 750 tr/min.</li>
+                      <li>Pied au plancher, le calculateur ne corrige plus avec les sondes : la valeur reste alors figée à 1,00.</li>
+                    </ul>
+                  </details>
+                </div>
+              </div>
+            </li>
+
+            <!-- Lecture complète et Full Read -->
+            <li class="etape chantier" data-revele>
+              <p class="etape__date">08/11/2026</p>
+              <h4>Lecture complète et copie du calculateur</h4>
+              <div class="chantier__corps">
+                <div>
+                  <p>Tous les modules sont interrogés, puis le logiciel du calculateur est copié avec MS4x Flasher. Verdict : logiciel <strong>430037</strong>, et pas 430069 comme supposé. Le même jour, les ratés à froid sont pris sur le fait, et 16 options de confort sont codées et gardées avec NCS Expert. <a class="lien-fleche" href="#codage">Le codage</a></p>
+                  <ul class="chiffres-cles">
+                    <li><strong>8</strong><span>modules qui répondent</span></li>
+                    <li><strong>23 ratés</strong><span>tous sur le cylindre 4, entre 11 et 15 °C, au ralenti</span></li>
+                    <li><strong>537 kg/h</strong><span>débit d'air maximal à pleine charge (149 g/s)</span></li>
+                  </ul>
+                  <details class="repli">
+                    <summary>Le détail de la journée</summary>
+                    <ul class="repli__liste">
+                      <li>8 modules répondent, dont le moteur (MS43), la fermeture, l'antidémarrage, le volant, la climatisation, le combiné et l'éclairage.</li>
+                      <li>Copie du calculateur : 524 288 octets, référence BMW 7511570. L'original est gardé en lecture seule ; on travaille sur une copie.</li>
+                      <li>Ratés : 23 en 20 s environ, puis plus aucun jusqu'à 98 °C. Aucun sur le cylindre 5 ce jour-là.</li>
+                      <li>Pleine charge : injecteurs ouverts à 64,2 % au maximum, limiteur vers 6 500 tr/min.</li>
+                    </ul>
+                  </details>
+                </div>
+                <ul class="chantier__refs" aria-label="Repères">
+                  <li>Logiciel · 430037</li>
+                  <li>Référence calculateur · 7511570</li>
+                </ul>
+              </div>
+            </li>
+
+            <!-- Cartographie lue -->
+            <li class="etape chantier" data-revele>
+              <p class="etape__date">11/11/2026</p>
+              <h4>Les cartographies, lues une par une</h4>
+              <div class="chantier__corps">
+                <div>
+                  <p>La copie du calculateur est ouverte dans TunerPro avec la définition du logiciel 430037. Rien n'est modifié : on lit ce que fait le calculateur d'origine.</p>
+                  <ul class="chiffres-cles">
+                    <li><strong>+9 à +10 %</strong><span>d'essence en plus à pleine charge (+12,5 % à 6 480 tr/min)</span></li>
+                    <li><strong>+15 %</strong><span>limite haute de l'adaptation du mélange</span></li>
+                    <li><strong>−12 %</strong><span>limite basse</span></li>
+                  </ul>
+                  <details class="repli">
+                    <summary>Comparaison avec un autre logiciel</summary>
+                    <ul class="repli__liste">
+                      <li>Comparé à un fichier d'exemple 430069 : démarrage et avance identiques, enrichissement à pleine charge plus faible sur ma voiture.</li>
+                      <li>Les adresses diffèrent : toute modification devra utiliser la définition 430037.</li>
+                      <li>Correction additive limitée à ±0,40.</li>
+                    </ul>
+                  </details>
+                </div>
+              </div>
+            </li>
+
+            <!-- 13/11 : bobines, sonde, défauts -->
+            <li class="etape chantier" data-revele>
+              <p class="etape__date">13/11/2026</p>
+              <h4>Bobines échangées et sonde de radiateur innocentée</h4>
+              <div class="chantier__corps">
+                <div>
+                  <p>Pour savoir si les ratés suivent la bobine, deux paires de bobines sont échangées. La sonde de sortie de radiateur, crue morte, est mesurée : elle est <strong>bonne</strong>.</p>
+                  <ul class="chiffres-cles">
+                    <li><strong>1,93 kΩ</strong><span>sonde de radiateur, tiède</span></li>
+                    <li><strong>5 V</strong><span>sur la prise du faisceau</span></li>
+                    <li><strong>−4,39 %</strong><span>correction sur chaque banc en fin de trajet</span></li>
+                  </ul>
+                  <details class="repli">
+                    <summary>Le détail : bobines, sonde, défauts</summary>
+                    <ul class="repli__liste">
+                      <li>Bobines : cylindre 1 = bobine n°4, cylindre 2 = n°5, cylindre 4 = n°1, cylindre 5 = n°2. Bougies inchangées (posées en 2021).</li>
+                      <li>Démarrage à 28,5 °C, trop chaud pour voir les ratés : test à refaire à froid.</li>
+                      <li>Le −48 °C venait d'une valeur inutilisable du bloc de mesures sur ce logiciel. Le débrancher crée bien un défaut : le calculateur lit la sonde.</li>
+                      <li>Défauts notés puis effacés (airbag exclu).</li>
+                      <li>La pompe à eau additionnelle avait été débranchée par erreur : elle explique probablement un défaut de la climatisation.</li>
+                      <li>La pleine charge n'a pas été enregistrée : l'enregistreur n'était pas lancé, puis la liaison avec le câble a échoué.</li>
+                                          </ul>
+                  </details>
+                </div>
+              </div>
+              <div class="chantier__galerie" aria-label="Photos réelles du 13/11">
+                <figure><img src="img/e39/prise-sonde-radiateur-480.jpg" srcset="img/e39/prise-sonde-radiateur-480.jpg 480w, img/e39/prise-sonde-radiateur-960.jpg 960w, img/e39/prise-sonde-radiateur.jpg 1600w" sizes="(max-width: 719px) 50vw, 200px" data-grande="img/e39/prise-sonde-radiateur.jpg" width="1600" height="2842" loading="lazy" alt="Vue de dessous : la sonde de température montée sur le bas du radiateur" /><figcaption>La sonde de température de sortie du radiateur, celle qui affichait -48 °C.</figcaption></figure>
+                <figure><img src="img/e39/multimetre-sonde-radiateur-480.jpg" srcset="img/e39/multimetre-sonde-radiateur-480.jpg 480w, img/e39/multimetre-sonde-radiateur-960.jpg 960w, img/e39/multimetre-sonde-radiateur.jpg 1600w" sizes="(max-width: 719px) 50vw, 200px" data-grande="img/e39/multimetre-sonde-radiateur.jpg" width="1600" height="2842" loading="lazy" alt="Le multimètre en mode ohms, posé au sol, écran sur « 1 »" /><figcaption>Le multimètre prêt pour mesurer la sonde.</figcaption></figure>
+                <figure><img src="img/e39/compartiment-moteur-13-11-480.jpg" srcset="img/e39/compartiment-moteur-13-11-480.jpg 480w, img/e39/compartiment-moteur-13-11-960.jpg 960w, img/e39/compartiment-moteur-13-11.jpg 1600w" sizes="(max-width: 719px) 50vw, 200px" data-grande="img/e39/compartiment-moteur-13-11.jpg" width="1600" height="901" loading="lazy" alt="Côté radiateur, au milieu des durites : le connecteur à 2 fils de la sonde" /><figcaption>Le connecteur de la sonde de radiateur.</figcaption></figure>
+                <figure><img src="img/e39/multimetre-compartiment-moteur-480.jpg" srcset="img/e39/multimetre-compartiment-moteur-480.jpg 480w, img/e39/multimetre-compartiment-moteur-960.jpg 960w, img/e39/multimetre-compartiment-moteur.jpg 1600w" sizes="(max-width: 719px) 50vw, 200px" data-grande="img/e39/multimetre-compartiment-moteur.jpg" width="1600" height="2842" loading="lazy" alt="Le multimètre posé près du vase d'expansion, dont le bouchon porte l'inscription 1,40" /><figcaption>Mesure sur la sonde ; le bouchon de vase de 1,4 bar est visible.</figcaption></figure>
+                <figure><img src="img/e39/bobines-avant-echange-480.jpg" srcset="img/e39/bobines-avant-echange-480.jpg 480w, img/e39/bobines-avant-echange-960.jpg 960w, img/e39/bobines-avant-echange.jpg 1600w" sizes="(max-width: 719px) 50vw, 200px" data-grande="img/e39/bobines-avant-echange.jpg" width="1600" height="2842" loading="lazy" alt="Les six bobines numérotées de 1 à 6 au feutre, dans l'ordre d'origine, le 1 côté avant" /><figcaption>Les bobines numérotées, avant l'échange.</figcaption></figure>
+                <figure><img src="img/e39/bobines-apres-echange-480.jpg" srcset="img/e39/bobines-apres-echange-480.jpg 480w, img/e39/bobines-apres-echange-960.jpg 960w, img/e39/bobines-apres-echange.jpg 1600w" sizes="(max-width: 719px) 50vw, 200px" data-grande="img/e39/bobines-apres-echange.jpg" width="1600" height="901" loading="lazy" alt="Les bobines après l'échange : du cylindre 1 au cylindre 5, bobines 4, 5, 3, 1 et 2" /><figcaption>Les bobines échangées 1↔4 et 2↔5, pour voir si les ratés des cylindres 4 et 5 suivaient la bobine.</figcaption></figure>
+              </div>
+            </li>
+
+            <!-- 14/11 : démarrage à froid -->
+            <li class="etape chantier" data-revele>
+              <p class="etape__date">14/11/2026 · 18h31</p>
+              <h4>Démarrage à froid, bobines échangées</h4>
+              <div class="chantier__corps">
+                <div>
+                  <p>Moteur à 10,5 °C, enregistreur lancé avant le démarrage. <strong>Aucun raté.</strong> L'irrégularité à froid reste sur les cylindres 4 et 5 : elle n'a pas suivi les bobines. Les suspects deviennent la bougie, l'injecteur ou une prise d'air de ces cylindres. C'est un indice faible, pas une preuve.</p>
+                  <details class="repli">
+                    <summary>Irrégularité maximale par cylindre, entre 11 et 15 °C</summary>
+                    <div class="repli__table">
+                      <table>
+                        <thead><tr><th scope="col">Cylindre</th><th scope="col">1</th><th scope="col">2</th><th scope="col">3</th><th scope="col">4</th><th scope="col">5</th><th scope="col">6</th></tr></thead>
+                        <tbody><tr><th scope="row">Irrégularité</th><td>1,20</td><td>0,37</td><td>1,51</td><td>2,09</td><td>2,10</td><td>0,99</td></tr></tbody>
+                      </table>
+                    </div>
+                    <p>À chaud, des pics de 1,2 à 3,3 n'apparaissent qu'en transition, sur plusieurs cylindres. Corrections mémorisées : −1,64 % banc 1, −4,47 % banc 2.</p>
+                  </details>
+                </div>
+              </div>
+            </li>
+
+            <!-- 15 au 18/11 : analyse et fichier flex -->
+            <li class="etape chantier" data-revele>
+              <p class="etape__date">15 au 18/11/2026</p>
+              <h4>Analyse du programme et fichier flex</h4>
+              <div class="chantier__corps">
+                <div>
+                  <p>Le programme du calculateur est analysé avec Ghidra : où l'adaptation s'applique, comment le démarrage est calculé. Vérifications en lecture seule le 16/11. Le 18/11, le fichier flex v1 est construit sur le PC fixe.</p>
+                  <p><a class="lien-fleche" href="#ethanol">L'étude en détail</a></p>
+                </div>
+              </div>
+            </li>
+
+            <!-- Bougies -->
+            <li class="etape chantier" data-revele>
+              <p class="etape__date">19/11/2026 · un peu plus de 168 000 km</p>
+              <h4>Bougies Denso IK20TT</h4>
+              <div class="chantier__corps chantier__corps--photo">
+                <div>
+                  <p>Les six <strong>NGK BKR6EQUP</strong> déposées avaient été posées le 31/03/2021 à 153 311 km selon la facture : environ 15 000 km de service. À l'œil : becs clairs, couleur beige ; une seule a le filetage brun doré (probablement le cylindre 3, la première de la rangée étant le cylindre 1).</p>
+                  <p>Les <strong>Denso IK20TT</strong> neuves sont posées le 19/11, serrées à 22 Nm (valeur Denso), et les bobines Bosch 0 221 504 004 reprennent leur ordre d'origine. Par les puits de bougie, le haut des pistons est noir de calamine (aspect courant à ce kilométrage, estimé). Contrôle conseillé vers 30 000 km ou 3-4 ans.</p>
+                </div>
+                <figure class="chantier__photo chantier__photo--double">
+                  <img src="img/e39/bougies-ngk-deposees-960.jpg" srcset="img/e39/bougies-ngk-deposees-480.jpg 480w, img/e39/bougies-ngk-deposees-960.jpg 960w, img/e39/bougies-ngk-deposees.jpg 1600w" sizes="(max-width: 1039px) 50vw, 180px" data-grande="img/e39/bougies-ngk-deposees.jpg" width="1600" height="2842" loading="lazy" alt="Les six anciennes bougies NGK posées côte à côte, électrodes claires, l'une avec un filetage plus brun" />
+                  <img src="img/e39/bobines-et-bougies-denso-960.jpg" srcset="img/e39/bobines-et-bougies-denso-480.jpg 480w, img/e39/bobines-et-bougies-denso-960.jpg 960w, img/e39/bobines-et-bougies-denso.jpg 1600w" sizes="(max-width: 1039px) 50vw, 180px" data-grande="img/e39/bobines-et-bougies-denso.jpg" width="1600" height="2842" loading="lazy" alt="Les six bobines posées au sol, à côté des bougies neuves et des anciennes, des boîtes vertes Denso et de la clé à bougie" />
+                  <img src="img/e39/bobines-numerotees-960.jpg" srcset="img/e39/bobines-numerotees-480.jpg 480w, img/e39/bobines-numerotees-960.jpg 960w, img/e39/bobines-numerotees.jpg 1600w" sizes="(max-width: 1039px) 50vw, 180px" data-grande="img/e39/bobines-numerotees.jpg" width="1600" height="901" loading="lazy" alt="Le dessus du moteur, cache retiré : les six bobines remises dans l'ordre, numéros écrits dessus, le 1 côté avant, à droite" />
+                  <figcaption>Photos réelles : les anciennes NGK ; les bobines, les Denso neuves et la clé à bougie ; les bobines remises dans l'ordre.</figcaption>
+                </figure>
+              </div>
+            </li>
+
+            <!-- Pression d'essence -->
+            <li class="etape chantier" data-revele>
+              <p class="etape__date">19/11/2026 · 18:24 à 18:42</p>
+              <h4>Pression d'essence au manomètre</h4>
+              <div class="chantier__corps chantier__corps--photo">
+                <div>
+                  <p>La pression est vérifiée avec un manomètre monté sur un T, a priori entre la sortie du filtre et le moteur, pendant qu'un log enregistre le régime. Pourquoi un T : la valve de la rampe a le filetage d'une valve de pneu, et le raccord du kit ne pouvait pas l'ouvrir. Conditions : eau à 51 °C, batterie à 13,8-13,9 V, 0 raté sur les 6 cylindres.</p>
+                  <ul class="chiffres-cles">
+                    <li><strong>3,1 bar</strong><span>contact mis, moteur arrêté</span></li>
+                    <li><strong>3,5 bar</strong><span>stable au ralenti, et constante pendant les accélérations à vide jusqu'à 6 107 tr/min (0 raté, KR 0)</span></li>
+                    <li><strong>2,9 bar</strong><span>à 18:42, dix minutes après l'arrêt (3,0 bar juste après, à 18:32)</span></li>
+                  </ul>
+                  <p>Cohérent avec les 3,5 bar de BMW, moteur à vide et voiture à l'arrêt.</p>
+                </div>
+                <figure class="chantier__photo chantier__photo--double">
+                  <img src="img/e39/manometre-montage-960.jpg" srcset="img/e39/manometre-montage-480.jpg 480w, img/e39/manometre-montage-960.jpg 960w, img/e39/manometre-montage.jpg 1600w" sizes="(max-width: 1039px) 50vw, 180px" data-grande="img/e39/manometre-montage.jpg" width="1600" height="2842" loading="lazy" alt="Le manomètre du kit et un bidon, au sol, reliés par un T à la durite d'essence" />
+                  <img src="img/e39/manometre-contact-mis-960.jpg" srcset="img/e39/manometre-contact-mis-480.jpg 480w, img/e39/manometre-contact-mis-960.jpg 960w, img/e39/manometre-contact-mis.jpg 1600w" sizes="(max-width: 1039px) 50vw, 180px" data-grande="img/e39/manometre-contact-mis.jpg" width="1600" height="2842" loading="lazy" alt="Gros plan du cadran du manomètre : l'aiguille vers 3,1 bar, soit environ 45 psi" />
+                  <figcaption>Photos réelles : le montage sur un T ; le cadran contact mis, environ 3,1 bar (45 psi).</figcaption>
+                </figure>
+              </div>
+              <div class="graphiques">
+                <figure class="graphique graphique--large" id="ethanol-pression" data-revele>
+                  <figcaption><h3>Pression d'essence du 19/11</h3><p>Relevés au manomètre sur un T, voiture à l'arrêt, et régime enregistré pendant les essais à vide.</p></figcaption>
+                  <div class="graphique__zone" data-graphique="eth-pression"></div>
+                </figure>
+              </div>
+            </li>
+
+            <!-- 24/11 : prise orpheline, bobines, reniflard -->
+            <li class="etape chantier etape--actuelle" data-revele>
+              <p class="etape__date">24/11/2026</p>
+              <h4>Une prise orpheline et deux bobines échangées</h4>
+              <div class="chantier__corps">
+                <div>
+                  <p>Une prise débranchée pend à l'avant gauche : 5 V sur deux fils, donc l'entrée d'un capteur. La lecture des défauts de la climatisation la relie au <strong>capteur de qualité d'air</strong> (recyclage automatique), en circuit ouvert : le capteur n'est plus là. Aucun effet sur le moteur.</p>
+                  <ul class="chiffres-cles">
+                    <li><strong>1</strong><span>seul défaut présent dans la climatisation : ce capteur ; aucun défaut moteur</span></li>
+                    <li><strong>2 ↔ 5</strong><span>bobines des cylindres 2 et 5 échangées vers 21:10, bougies inchangées</span></li>
+                  </ul>
+                  <details class="repli">
+                    <summary>Le détail</summary>
+                    <ul class="repli__liste">
+                      <li>Bobines : depuis le 24/11, le cylindre 2 porte la bobine n°5 et le cylindre 5 la n°2, les autres à leur place. Aucun effet mesurable : ces deux cylindres étaient déjà les plus calmes au ralenti chaud.</li>
+                      <li>Test du bouchon d'huile retiré au ralenti : le régime change et la régulation réagit, le reniflard fonctionne. Les ratés comptés pendant ce test sont provoqués par l'essai.</li>
+                    </ul>
+                  </details>
+                </div>
+              </div>
+            </li>
+
+          </ol>
+        </div>
+      </div>
+    </section>
+    <!-- ══ Les pièces montées : inventaire daté ══ -->
+    <section class="section pieces-montees" id="pieces-montees" data-etape="Les pièces montées" aria-labelledby="pieces-montees-titre">
+      <div class="conteneur">
+        <div class="entete-section">
+          <p class="surtitre" data-revele>Les pièces montées · état au 25/11/2026</p>
+          <h2 class="titre-section" id="pieces-montees-titre" data-mots>Tout ce qui a été <em>changé.</em></h2>
+          <p data-revele>Chaque pièce neuve posée depuis l'achat, dans l'ordre, avec sa référence et sa date. Le manchon d'admission, lui, n'a pas été changé : un collier Rilsan le referme. Quand seule la date de commande est connue, elle est indiquée comme telle : ce n'est pas la date de pose. Les photos sont celles des produits (fabricants et boutiques) ; les photos réelles sont dans les chantiers.</p>
+        </div>
+        <ol class="pieces-montees__grille" data-revele>
+          <li class="pieces-montees__carte">
+            <figure><img src="img/pieces-montees/capteur-aac-echappement-320.png" data-grande="img/pieces-montees/capteur-aac-echappement.png" loading="lazy" alt="Capteur d'arbre à cames d'échappement, Hella 6PU 009 121-701" /></figure>
+            <p class="pieces-montees__date">Vers le 23/08/2026</p>
+            <h3>Capteur d'arbre à cames d'échappement</h3>
+            <p class="pieces-montees__ref">Hella 6PU 009 121-701</p>
+          </li>
+          <li class="pieces-montees__carte">
+            <figure><img src="img/pieces-montees/huile-motul-320.png" data-grande="img/pieces-montees/huile-motul.png" loading="lazy" alt="Huile moteur, Motul 8100 X-cess 5W40" /></figure>
+            <p class="pieces-montees__date">Vers le 23/08/2026 · 164 292 km</p>
+            <h3>Huile moteur</h3>
+            <p class="pieces-montees__ref">Motul 8100 X-cess 5W40</p>
+          </li>
+          <li class="pieces-montees__carte">
+            <figure><img src="img/pieces-montees/filtre-huile-320.png" data-grande="img/pieces-montees/filtre-huile.png" loading="lazy" alt="Filtre à huile, Mann-Filter HU 925/4 x" /></figure>
+            <p class="pieces-montees__date">Vers le 23/08/2026 · 164 292 km</p>
+            <h3>Filtre à huile</h3>
+            <p class="pieces-montees__ref">Mann-Filter HU 925/4 x</p>
+          </li>
+          <li class="pieces-montees__carte">
+            <figure><img src="img/pieces-montees/engine-flush-320.png" data-grande="img/pieces-montees/engine-flush.png" loading="lazy" alt="Rinçage moteur, Liqui Moly Engine Flush 300 ml" /></figure>
+            <p class="pieces-montees__date">Vers le 23/08/2026</p>
+            <h3>Rinçage moteur</h3>
+            <p class="pieces-montees__ref">Liqui Moly Engine Flush 300 ml</p>
+          </li>
+          <li class="pieces-montees__carte">
+            <figure><img src="img/pieces-montees/cera-tec-320.png" data-grande="img/pieces-montees/cera-tec.png" loading="lazy" alt="Additif d'huile céramique, Liqui Moly Cera Tec 3721" /></figure>
+            <p class="pieces-montees__date">Vers le 23/08/2026</p>
+            <h3>Additif d'huile céramique</h3>
+            <p class="pieces-montees__ref">Liqui Moly Cera Tec 3721</p>
+          </li>
+          <li class="pieces-montees__carte">
+            <figure><img src="img/pieces-montees/filtreEssence-320.png" data-grande="img/pieces-montees/filtreEssence.png" loading="lazy" alt="Filtre à essence à régulateur, Purflux EP200" /></figure>
+            <p class="pieces-montees__date">Fin août 2026</p>
+            <h3>Filtre à essence à régulateur</h3>
+            <p class="pieces-montees__ref">Purflux EP200</p>
+          </li>
+          <li class="pieces-montees__carte pieces-montees__carte--sans-photo">
+            <div class="pieces-montees__vide" aria-hidden="true">Pas de photo</div>
+            <p class="pieces-montees__date">Fin août 2026, avec le filtre</p>
+            <h3>Durites d'essence (×3) et colliers</h3>
+            <p class="pieces-montees__ref">Référence non notée</p>
+          </li>
+          <li class="pieces-montees__carte">
+            <figure><img src="img/pieces-montees/pompeEssence-320.png" data-grande="img/pieces-montees/pompeEssence.png" loading="lazy" alt="Pompe à essence 340 L/h, compatible E85, AEM 50-1220" /></figure>
+            <p class="pieces-montees__date">03/10/2026</p>
+            <h3>Pompe à essence 340 L/h, compatible E85</h3>
+            <p class="pieces-montees__ref">AEM 50-1220</p>
+          </li>
+          <li class="pieces-montees__carte">
+            <figure><img src="img/pieces-montees/debitmetre-320.png" data-grande="img/pieces-montees/debitmetre.png" loading="lazy" alt="Débitmètre d'air, Pierburg 7.07759.09.0" /></figure>
+            <p class="pieces-montees__date">13/10/2026</p>
+            <h3>Débitmètre d'air</h3>
+            <p class="pieces-montees__ref">Pierburg 7.07759.09.0</p>
+          </li>
+          <li class="pieces-montees__carte pieces-montees__carte--sans-photo">
+            <div class="pieces-montees__vide" aria-hidden="true">Pas de photo</div>
+            <p class="pieces-montees__date">13/10/2026</p>
+            <h3>Joint de la DISA</h3>
+            <p class="pieces-montees__ref">Référence non notée</p>
+          </li>
+          <li class="pieces-montees__carte">
+            <figure><img src="img/pieces-montees/radiateur-320.png" data-grande="img/pieces-montees/radiateur.png" loading="lazy" alt="Dessin technique Nissens du radiateur 60648A : 650 × 438 mm" /></figure>
+            <p class="pieces-montees__date">18/10/2026</p>
+            <h3>Radiateur</h3>
+            <p class="pieces-montees__ref">Nissens 60648A</p>
+          </li>
+          <li class="pieces-montees__carte">
+            <figure><img src="img/pieces-montees/pompeEau-320.png" data-grande="img/pieces-montees/pompeEau.png" loading="lazy" alt="Pompe à eau, Meyle 313 011 2001" /></figure>
+            <p class="pieces-montees__date">18/10/2026</p>
+            <h3>Pompe à eau</h3>
+            <p class="pieces-montees__ref">Meyle 313 011 2001</p>
+          </li>
+          <li class="pieces-montees__carte pieces-montees__carte--sans-photo">
+            <div class="pieces-montees__vide" aria-hidden="true">Pas de photo</div>
+            <p class="pieces-montees__date">Commandée le 28/09/2026</p>
+            <h3>Poulie de pompe à eau</h3>
+            <p class="pieces-montees__ref">febi 30125</p>
+          </li>
+          <li class="pieces-montees__carte">
+            <figure><img src="img/pieces-montees/thermostat-320.png" data-grande="img/pieces-montees/thermostat.png" loading="lazy" alt="Thermostat piloté, Mahle TM 13 97" /></figure>
+            <p class="pieces-montees__date">18/10/2026</p>
+            <h3>Thermostat piloté</h3>
+            <p class="pieces-montees__ref">Mahle TM 13 97</p>
+          </li>
+          <li class="pieces-montees__carte">
+            <figure><img src="img/pieces-montees/courroie-320.png" data-grande="img/pieces-montees/courroie.png" loading="lazy" alt="Courroie d'accessoires, Continental 6PK1548" /></figure>
+            <p class="pieces-montees__date">Commandée le 12/10/2026, reçue le 13/10</p>
+            <h3>Courroie d'accessoires</h3>
+            <p class="pieces-montees__ref">Continental 6PK1548</p>
+          </li>
+          <li class="pieces-montees__carte pieces-montees__carte--sans-photo">
+            <div class="pieces-montees__vide" aria-hidden="true">Pas de photo</div>
+            <p class="pieces-montees__date">Commandée le 11/10/2026</p>
+            <h3>Courroie (4 nervures)</h3>
+            <p class="pieces-montees__ref">Gates 4PK668</p>
+          </li>
+          <li class="pieces-montees__carte">
+            <figure><img src="img/pieces-montees/liquide-refroidissement-320.png" data-grande="img/pieces-montees/liquide-refroidissement.png" loading="lazy" alt="Liquide de refroidissement, Mannol MN4013" /></figure>
+            <p class="pieces-montees__date">Commandé le 14/09/2026</p>
+            <h3>Liquide de refroidissement</h3>
+            <p class="pieces-montees__ref">Mannol MN4013, 10 L</p>
+          </li>
+          <li class="pieces-montees__carte pieces-montees__carte--sans-photo">
+            <div class="pieces-montees__vide" aria-hidden="true">Pas de photo</div>
+            <p class="pieces-montees__date">Commandé le 14/09/2026, posé avant le 02/10</p>
+            <h3>Bouchon de vase d'expansion, 1,4 bar</h3>
+            <p class="pieces-montees__ref">febi 12205</p>
+          </li>
+          <li class="pieces-montees__carte">
+            <figure><img src="img/pieces-montees/filtre-air-320.png" data-grande="img/pieces-montees/filtre-air.png" loading="lazy" alt="Filtre à air, Mann-Filter C 25 114/1" /></figure>
+            <p class="pieces-montees__date">Commandé le 27/09/2026</p>
+            <h3>Filtre à air</h3>
+            <p class="pieces-montees__ref">Mann-Filter C 25 114/1</p>
+          </li>
+          <li class="pieces-montees__carte">
+            <figure><img src="img/pieces-montees/bougies-320.png" data-grande="img/pieces-montees/bougies.png" loading="lazy" alt="Bougies d'allumage (×6), Denso IK20TT" /></figure>
+            <p class="pieces-montees__date">19/11/2026</p>
+            <h3>Bougies d'allumage (×6)</h3>
+            <p class="pieces-montees__ref">Denso IK20TT</p>
+          </li>
+          <li class="pieces-montees__carte pieces-montees__carte--sans-photo">
+            <div class="pieces-montees__vide" aria-hidden="true">Pas de photo</div>
+            <p class="pieces-montees__date">Commandé le 19/11/2026</p>
+            <h3>Câble d'ouverture du capot</h3>
+            <p class="pieces-montees__ref">BMW 51 23 8 176 595</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+    <!-- ══ Le résultat ══ -->
+    <section class="section resultat" id="resultat" data-etape="Le résultat" aria-labelledby="resultat-titre">
+      <div class="conteneur resultat__grille">
+        <div>
+          <p class="surtitre" data-revele>Le résultat</p>
+          <h2 class="titre-section" id="resultat-titre" data-mots>Retour à <em>zéro.</em></h2>
+          <p class="resultat__texte" data-revele>Les corrections long terme (LTFT) disent combien d'essence le calculateur ajoute pour compenser. Après l'intervention, il n'a plus rien à corriger. Le 25/10, le dossier est clos : il retire même un peu d'essence, avec un écart stable entre les bancs.</p>
+          <p class="resultat__texte" data-revele>Dans le calculateur moteur (le <strong>DME</strong>, ici un Siemens MS43), cette correction en pourcentage s'appelle <strong>MUL</strong> (multiplicative). Une seconde, l'<strong>ADD</strong> (additive), ajoute ou retire une petite quantité fixe : elle pèse surtout au ralenti.</p>
+          <table class="historique-ltft" data-revele>
+            <caption class="visuellement-cache">Évolution des corrections long terme au ralenti</caption>
+            <thead><tr><th scope="col">Relevé</th><th scope="col">Banc 1</th><th scope="col">Banc 2</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">27/09 · valise V519, au ralenti</th><td>+8,6 %</td><td>+6,3 %</td></tr>
+              <tr><th scope="row">08/10 · log Deep OBD, moyenne (MUL)</th><td>+6,8 %</td><td>+4,6 %</td></tr>
+              <tr><th scope="row">13/10</th><td>+3,1 %</td><td>0,0 %</td></tr>
+              <tr class="historique-ltft__final"><th scope="row">Après intervention · relevé ponctuel</th><td>0 %</td><td>0 %</td></tr>
+              <tr><th scope="row">25/10 · suivi</th><td>−3,9 %</td><td>environ −1 %</td></tr>
+              <tr><th scope="row">08/11 · INPA, moteur chaud (MUL)</th><td>−3,57 %</td><td>−3,85 %</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <!-- Schéma A4 : jauges LTFT -->
+        <figure class="jauges" data-revele data-jauges>
+          <div class="jauge-ltft" data-depart="3.1" data-arrivee="0">
+            <svg viewBox="0 0 200 120" aria-hidden="true">
+              <path class="jauge-ltft__fond" d="M20 100 A80 80 0 0 1 180 100"/>
+              <path class="jauge-ltft__zone" d="M88 21.6 A80 80 0 0 1 112 21.6"/>
+              <line class="jauge-ltft__aiguille" x1="100" y1="100" x2="100" y2="34"/>
+              <circle cx="100" cy="100" r="6" class="jauge-ltft__axe"/>
+              <text x="20" y="116">−10</text><text x="100" y="12">0</text><text x="180" y="116">+10</text>
+            </svg>
+            <p class="jauge-ltft__valeur"><span data-valeur>+3,1</span> %</p>
+            <p class="jauge-ltft__nom">LTFT banc 1</p>
+          </div>
+          <div class="jauge-ltft" data-depart="0" data-arrivee="0">
+            <svg viewBox="0 0 200 120" aria-hidden="true">
+              <path class="jauge-ltft__fond" d="M20 100 A80 80 0 0 1 180 100"/>
+              <path class="jauge-ltft__zone" d="M88 21.6 A80 80 0 0 1 112 21.6"/>
+              <line class="jauge-ltft__aiguille" x1="100" y1="100" x2="100" y2="34"/>
+              <circle cx="100" cy="100" r="6" class="jauge-ltft__axe"/>
+              <text x="20" y="116">−10</text><text x="100" y="12">0</text><text x="180" y="116">+10</text>
+            </svg>
+            <p class="jauge-ltft__valeur"><span data-valeur>0,0</span> %</p>
+            <p class="jauge-ltft__nom">LTFT banc 2</p>
+          </div>
+          <figcaption>De +3,1 % / 0,0 % (13/10) à 0 % / 0 % après intervention — relevé ponctuel.</figcaption>
+        </figure>
+      </div>
+    </section>
+    <!-- ══ Les relevés, en vrai ══ -->
+    <section class="section releves" id="releves" data-etape="Les relevés" aria-labelledby="releves-titre">
+      <div class="conteneur">
+        <div class="entete-section">
+          <p class="surtitre" data-revele>Les relevés</p>
+          <h2 class="titre-section" id="releves-titre" data-mots>Les relevés, <em>en vrai.</em></h2>
+          <p class="releves__avant" data-revele><strong>Données AVANT réparation</strong> : roulage du 08/10/2026, log MS430DS0 de Deep OBD, 109 mesures de 18:41 à 18:49, tracées telles quelles.</p>
+        </div>
+
+        <div class="graphiques">
+          <figure class="graphique graphique--large" data-revele>
+            <figcaption><h3>Corrections carburant</h3><p>Positives = le calculateur ajoute de l'essence pour compenser un mélange pauvre.</p></figcaption>
+            <div class="graphique__zone" data-graphique="corrections"></div>
+          </figure>
+          <figure class="graphique graphique--large" data-revele>
+            <figcaption><h3>VANOS : consigne contre réel</h3><p>Admission et échappement, en degrés vilebrequin : la position réelle suit la consigne.</p></figcaption>
+            <div class="graphique__zone" data-graphique="vanos"></div>
+          </figure>
+          <figure class="graphique graphique--large" data-revele>
+            <figcaption><h3>Sondes lambda</h3><p>Tension des 4 sondes, en volts (VKAT = avant catalyseur, NKAT = après). Les sondes amont basculent entre pauvre et riche ; sur ce log, les sondes aval oscillent presque autant (écart-type ~0,32 V contre ~0,35 V). Les courbes sont présentées telles quelles, sans conclusion sur l'état des catalyseurs.</p></figcaption>
+            <div class="graphique__zone" data-graphique="lambda"></div>
+          </figure>
+          <figure class="graphique graphique--large" data-revele>
+            <figcaption><h3>Températures</h3><p>Liquide de refroidissement, huile (modélisée) et air admis, en °C.</p></figcaption>
+            <div class="graphique__zone" data-graphique="temperatures"></div>
+          </figure>
+          <figure class="graphique graphique--photo" data-revele>
+            <img src="img/e39/v519-longft.jpg" width="640" height="722" loading="lazy" alt="Écran Donnée Flux de la valise V519 : LONGFT1 8,6 %, SHRTFT2 2,3 %, LONGFT2 6,3 %, régime 752 tr/min, avance 2°" />
+            <figcaption><h3>La valise V519</h3><p>Photo réelle : LONGFT1 +8,6 %, LONGFT2 +6,3 % au ralenti (752 tr/min). La dérive continuait, banc 1 devant.</p></figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ Les outils : la chaîne, chaque logiciel, le codage NCS Expert, les détails ══ -->
+    <section class="section outils-e39" id="outils" data-etape="Les outils" aria-labelledby="outils-titre">
+      <div class="conteneur">
+        <div class="entete-section">
+          <p class="partie-badge" data-revele>Partie 3 · Les outils</p>
+          <p class="surtitre" data-revele>Les outils</p>
+          <h2 class="titre-section" id="outils-titre" data-mots>Lire la voiture <em>sans rien casser.</em></h2>
+          <div class="en-simple" data-revele>
+            <p class="en-simple__titre">En simple</p>
+            <p>Une voiture, c'est plein de petits ordinateurs qui se parlent : moteur, éclairage, fermeture des portes, tableau de bord. Avec un câble branché sous le volant, mon PC portable peut les écouter, et parfois leur donner un nouveau réglage. Mon PC fixe, lui, ne touche jamais la voiture : il analyse et vérifie.</p>
+          </div>
+        </div>
+
+        <ul class="chiffres-cles chiffres-cles--resume" data-revele>
+          <li><strong>1 seul PC</strong><span>branché à la voiture. L'autre analyse et prépare</span></li>
+          <li><strong>4 fichiers</strong><span>du calculateur préparés du 18 au 23/11, chacun vérifié par un programme</span></li>
+          <li><strong>16 options</strong><span>de confort codées et gardées avec NCS Expert le 08/11</span></li>
+          <li><strong>5 / s</strong><span>mesures par seconde au plus avec mon enregistreur, contre une toutes les 0,8 s au mieux au téléphone</span></li>
+        </ul>
+
+        <!-- La chaîne : de la prise de diagnostic au PC fixe -->
+        <figure class="chaine" data-revele>
+          <ol class="chaine__etapes">
+            <li class="chaine__bloc">
+              <p class="chaine__nom">La voiture</p>
+              <p>8 boîtiers électroniques qui répondent, dont le calculateur moteur Siemens MS43.</p>
+            </li>
+            <li class="chaine__bloc chaine__bloc--cable">
+              <p class="chaine__nom">Le câble K+DCAN</p>
+              <p>De la prise de diagnostic (OBD) au port USB, une vingtaine d'euros.</p>
+            </li>
+            <li class="chaine__bloc chaine__bloc--portable">
+              <p class="chaine__nom">Le PC portable</p>
+              <p>Le seul branché à la voiture : INPA, Tool32, MS4x Flasher, NCS Expert et mon enregistreur.</p>
+            </li>
+            <li class="chaine__bloc chaine__bloc--fixe">
+              <p class="chaine__nom">Le PC fixe</p>
+              <p>Jamais branché : TunerPro, Ghidra et mes scripts. Il prépare et contrôle chaque fichier.</p>
+            </li>
+          </ol>
+          <figcaption>Les deux PC échangent par des dépôts privés : logs, lectures du calculateur et notes, tous datés.</figcaption>
+        </figure>
+
+        <h3 class="sous-titre-section" data-revele>Ce que fait chaque logiciel</h3>
+        <ul class="logiciels" data-cascade>
+          <li data-revele><p class="logiciels__nom">INPA et EDIABAS</p><p class="logiciels__role">Lire</p><p>Les écrans de diagnostic de BMW : valeurs en direct (régime, températures, corrections) et défauts de chaque module.</p></li>
+          <li data-revele><p class="logiciels__nom">Mon enregistreur</p><p class="logiciels__role">Enregistrer</p><p>Un script qui parle à EDIABAS et enregistre un trajet complet, jusqu'à 5 mesures par seconde. Il refuse toute commande qui écrit.</p></li>
+          <li data-revele><p class="logiciels__nom">MS4x Flasher</p><p class="logiciels__role">Copier</p><p>Copie complète du calculateur, pour l'étudier sur une copie, jamais sur l'original.</p></li>
+          <li data-revele><p class="logiciels__nom">NCS Expert</p><p class="logiciels__role">Coder le confort</p><p>Lit et modifie les options de confort de chaque module : verrouillage, éclairage, essuie-glaces.</p></li>
+          <li data-revele><p class="logiciels__nom">TunerPro</p><p class="logiciels__role">Voir les cartographies</p><p>Ouvre une copie du calculateur avec la définition du logiciel 430037 : chaque table, en chiffres et en 3D.</p></li>
+          <li data-revele><p class="logiciels__nom">Ghidra</p><p class="logiciels__role">Comprendre le programme</p><p>Lit le programme du calculateur pour savoir comment chaque table est vraiment utilisée.</p></li>
+        </ul>
+
+        <!-- Captures réelles des logiciels, faites sur le PC portable le 25/11 (câble débranché) -->
+        <h3 class="sous-titre-section" data-revele>Les logiciels, en vrai</h3>
+        <p class="ethanol__intro" data-revele>Captures faites sur le PC portable le 25/11/2026, voiture non branchée : ce sont les écrans d'accueil. Les écrans de diagnostic en direct seront ajoutés après une séance câble branché.</p>
+        <div class="captures" data-cascade>
+          <figure data-revele><img src="img/e39/capture-inpa.webp" data-grande="img/e39/capture-inpa.webp" width="1280" height="688" loading="lazy" alt="INPA 5.00, menu de départ : batterie et contact sur « off » car aucun câble n'est branché, liste des familles de modèles BMW" /><figcaption><strong>INPA</strong> · le menu de départ ; batterie et contact sur « off » : pas de câble.</figcaption></figure>
+          <figure data-revele><img src="img/e39/capture-ms4x-flasher.webp" data-grande="img/e39/capture-ms4x-flasher.webp" width="576" height="599" loading="lazy" alt="MS4x Flasher, écran principal avec les boutons Identify et Open, message « No serial devices found »" /><figcaption><strong>MS4x Flasher</strong> · l'écran principal, sans câble : « aucun appareil trouvé ».</figcaption></figure>
+          <figure data-revele><img src="img/e39/capture-ncs-expert.webp" data-grande="img/e39/capture-ncs-expert.webp" width="1280" height="669" loading="lazy" alt="NCS Expert, fenêtre « Kein Profil geladen » (aucun profil chargé), champs vides" /><figcaption><strong>NCS Expert</strong> · en allemand, aucun profil chargé.</figcaption></figure>
+          <figure data-revele><img src="img/e39/capture-tool32.webp" data-grande="img/e39/capture-tool32.webp" width="667" height="400" loading="lazy" alt="EDIABAS Toolset 32, version 4.0.3, écran d'accueil" /><figcaption><strong>Tool32</strong> · pour lancer un job EDIABAS à la main.</figcaption></figure>
+          <figure data-revele><img src="img/e39/capture-enregistreur-simulation.webp" data-grande="img/e39/capture-enregistreur-simulation.webp" width="1129" height="635" loading="lazy" alt="Fenêtre de terminal de l'enregistreur maison en mode simulation : fichier d'enregistrement marqué SIMULATION, 4,7 tours par seconde" /><figcaption><strong>Mon enregistreur</strong> · en <strong>simulation</strong> sur PC : les valeurs affichées sont inventées par le mode test.</figcaption></figure>
+        </div>
+
+        <!-- Le codage NCS Expert -->
+        <div class="codage" id="codage">
+          <h3 class="sous-titre-section" data-revele>Le codage avec NCS Expert <span class="ethanol__date">08/11/2026</span></h3>
+          <div class="en-simple" data-revele>
+            <p class="en-simple__titre">En simple</p>
+            <p>Beaucoup de réglages de confort sont des cases à cocher cachées dans les boîtiers de la voiture. NCS Expert sait les lire. J'ai sauvegardé chaque boîtier, coché quelques cases, puis relu pour vérifier que seules celles-là avaient changé.</p>
+          </div>
+          <div class="codage__modules" data-cascade>
+            <article class="codage__module" data-revele>
+              <p class="codage__entete"><span>13 cases</span>Module de fermeture et de confort (ZKE3)</p>
+              <ul class="repli__liste">
+                <li><strong>Verrouillage automatique</strong> en roulant, au-dessus de 16 km/h, pour les quatre clés.</li>
+                <li><strong>Ouverture sélective</strong> : un appui sur la télécommande ouvre la porte conducteur, deux appuis toutes les portes, pour les quatre clés.</li>
+                <li><strong>Double clignotement</strong> au déverrouillage.</li>
+                <li><strong>Feux de détresse</strong> quand l'alarme se déclenche.</li>
+                <li><strong>Mode panique</strong> : en maintenant un bouton de la télécommande, l'alarme sonne et les vitres se ferment.</li>
+                <li><strong>Position service des essuie-glaces</strong>, pour changer les balais facilement.</li>
+              </ul>
+            </article>
+            <article class="codage__module" data-revele>
+              <p class="codage__entete"><span>3 cases</span>Module d'éclairage (LCM III)</p>
+              <ul class="repli__liste">
+                <li><strong>Feux de jour</strong> européens, avec les anneaux des phares.</li>
+                <li><strong>Feux de position avant en clignotants d'appoint</strong> : les anneaux accompagnent les clignotants.</li>
+                <li><strong>Durée d'impulsion du contrôle des ampoules</strong> changée, un essai pour les feux de recul à LED.</li>
+              </ul>
+              <p class="codage__note">Une quatrième case, les feux stop atténués servant de feux de position, a été essayée puis remise d'origine le soir même.</p>
+              <p class="codage__note">Ces options figurent dans les données de codage de BMW pour ce module ; leur étude fait partie du même projet, et chaque module a été sauvegardé avant toute écriture.</p>
+            </article>
+            <article class="codage__module" data-revele>
+              <p class="codage__entete"><span>0 case</span>Combiné d'instruments (KOMBI39C)</p>
+              <p>Toutes ses options ont été décodées le 21/11, en lecture seule. Rien n'y est écrit : la correction de la consommation affichée a été étudiée dans le calculateur moteur (version v0e), sans toucher au combiné.</p>
+            </article>
+          </div>
+          <details class="repli repli--section" data-revele>
+            <summary>La méthode et les noms exacts des options</summary>
+            <ul class="repli__liste">
+              <li>Pour chaque module : lecture du codage actuel, sauvegardée avant toute écriture, puis écriture et relecture. Le module d'éclairage a été écrit deux fois le même soir : 4 cases, puis une remise d'origine.</li>
+              <li>ZKE3 (fichier de codage <code>GM3.C05</code>) : relecture identique à l'écrit, 13 cases changées. <code>VERRIEGELN_AUT_AB_X_KM/H</code> et <code>VERRIEGELN_XKM/H_SENDER_2</code> à <code>_4</code> (la clé 1 l'avait déjà) ; <code>ZV_SELEKTIV</code> et <code>SEL_ZV_SENDER_1</code> à <code>_4</code> ; <code>QUIT_OPT_ENTSCH</code> ; <code>ALARM_OPT_WARNBLINKER</code> ; <code>PANIK_MODUS</code> ; <code>ABKLAPPSTELLUNG</code>.</li>
+              <li>LCM III (<code>LCM.C18</code>) : <code>TAGFAHRLICHT_ECE</code>, <code>SL_VORNE_ALS_ZUSATZ_BLK</code>, <code>PULS_TIME_OPTION</code> ; <code>BL_ALS_SL_DIMMEN</code> écrit puis remis à « non actif ».</li>
+              <li>Combiné (<code>KMB_E39.C07</code>) : options listées à partir des données de codage, sans câble, sur le PC fixe.</li>
+              <li>Le seuil du verrouillage automatique (16 km/h) était déjà réglé d'usine : seule l'option est activée.</li>
+            </ul>
+          </details>
+        </div>
+
+        <div class="replis">
+          <details class="repli repli--section">
+            <summary>La chaîne de diagnostic</summary>
+            <ul class="repli__liste">
+              <li><strong>Câble K+DCAN</strong> (puce FTDI) entre la prise OBD et le PC portable.</li>
+              <li><strong>EDIABAS et INPA</strong> : le moteur de communication de BMW et ses écrans de diagnostic. Ils parlent à chaque module, dont le calculateur moteur (le DME).</li>
+              <li><strong>MS4x Flasher</strong> : copie complète du calculateur.</li>
+              <li><strong>TunerPro</strong> : lecture des cartographies sur une copie, sur le PC fixe.</li>
+              <li><strong>Deep OBD</strong> sur Android : les premiers logs, le 08/10, avec le même câble.</li>
+            </ul>
+          </details>
+          <details class="repli repli--section">
+            <summary>L'enregistreur maison</summary>
+            <ul class="repli__liste">
+              <li>Un script PowerShell qui parle à EDIABAS : bloc moteur à chaque tour, les autres valeurs moins souvent.</li>
+              <li><strong>Liste blanche</strong> : seuls les jobs de lecture sont autorisés. Les commandes d'effacement, de test actif ou de programmation sont refusées.</li>
+              <li>Ajouts du 14/11 : avance réelle, recul pour cliquetis, sonde de sortie de radiateur et niveau d'essence lu au combiné.</li>
+              <li>Défauts relus au début et à la fin. Incidents de communication datés. Arrêt propre sans clavier.</li>
+              <li>Depuis le 25/11 : reconnexion automatique quand la liaison avec le câble se perd.</li>
+              <li>Tout est testé en simulation sur le PC fixe avant d'aller à la voiture.</li>
+            </ul>
+          </details>
+          <details class="repli repli--section">
+            <summary>Deux PC, une règle</summary>
+            <ul class="repli__liste">
+              <li>Le PC portable est le seul branché à la voiture : lecture, logs, copie du calculateur.</li>
+              <li>Le PC fixe ne touche jamais la voiture : analyse, calculs, préparation, documentation.</li>
+              <li>Chaque chiffre est revérifié dans le fichier brut avant d'être noté. Les erreurs corrigées sont gardées dans un journal.</li>
+            </ul>
+          </details>
+          <details class="repli repli--section">
+              <summary>Préparer et vérifier un fichier, outil par outil</summary>
+              <ul class="repli__liste">
+                <li><strong>MS4x Flasher 1.6.1</strong> : copie complète du calculateur, pour travailler sur une copie.</li>
+                <li>La définition XDF 430037 v1.15, et <strong>Ghidra 12.2</strong> pour lire le programme.</li>
+                <li><code>construire_flex.py</code> : construit le fichier depuis l'original et la liste validée, refuse d'écraser, vérifie l'empreinte.</li>
+                <li><code>ms43_verif.py</code> : contrôle que seules les valeurs de la liste changent, et refuse toute modification du programme.</li>
+                <li>Un émulateur pour exécuter le code du mode de démarrage au volant, sur PC uniquement.</li>
+                <li>À l'atelier : manomètre d'essence sur un T.</li>
+              </ul>
+          </details>
+          <details class="repli repli--section">
+            <summary>Le code</summary>
+            <p>Les scripts génériques sont publics : <a href="https://github.com/Goldenyan0/e39-ediabas-tools" target="_blank" rel="noopener">e39-ediabas-tools sur GitHub</a>. Lanceur INPA portable en un clic, enregistreur de trajet, lecture de jobs EDIABAS et analyse de trajet, sans aucun logiciel BMW dedans.</p>
+            <p>Les données de la voiture (logs, copie du calculateur, notes) restent dans des dépôts privés.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ L'étude du calculateur et de l'E85 (cartographies : donnees-cartos.js) ══ -->
+    <section class="section ethanol" id="ethanol" data-etape="L'étude E85" aria-labelledby="ethanol-titre">
+      <div class="conteneur">
+        <div class="entete-section">
+          <p class="partie-badge" data-revele>Partie 4 · Étude du calculateur · 08 au 23/11/2026</p>
+          <p class="surtitre" data-revele>Étude et rétro-ingénierie du calculateur</p>
+          <h2 class="titre-section" id="ethanol-titre" data-mots>Le calculateur <em>et l'E85.</em></h2>
+          <aside class="avertissement" data-revele role="note" aria-label="Cadre du projet"><p class="avertissement__titre">Cadre du projet</p><p>Pour rouler à l'E85 en toute légalité, j'envisage un boîtier flex fuel homologué, posé par un installateur agréé, avec mise à jour de la carte grise et déclaration à l'assureur. Les modifications logicielles présentées ici sont un projet d'étude, non homologué, à ne pas reproduire sur un véhicule circulant sur la voie publique.</p><p>Projet d'étude : analyse du logiciel, préparation et vérification des fichiers, tests sur émulateur et sur PC. Aucun fichier ni logiciel de BMW n'est diffusé sur ce site.</p></aside>
+          <p data-revele>Du 08 au 23/11/2026 : j'ai copié le logiciel du calculateur Siemens MS43, je l'ai lu et compris, puis j'ai préparé et vérifié des fichiers qui le rendraient capable d'accepter aussi bien le SP98 que l'E85, sans capteur d'éthanol. Ce qui est marqué « estimé » est un calcul, pas une mesure.</p>
+          <div class="en-simple" data-revele>
+            <p class="en-simple__titre">En simple</p>
+            <p>L'E85 contient surtout de l'alcool (de 60 à 85 % selon la saison), le reste est de l'essence. Pour faire le même travail, il en faut environ 25 à 40 % de plus. J'ai étudié comment apprendre au calculateur à injecter plus, et à se corriger seul selon le carburant : SP98, E85 ou un mélange des deux. Chaque changement est vérifié par des programmes avant d'être retenu.</p>
+          </div>
+        </div>
+        <nav class="sous-sommaire" aria-label="Dans cette partie" data-revele>
+          <a href="#flashs"><span>4.0</span>Les 4 fichiers</a>
+          <a href="#e85-principe"><span>4.1</span>Le principe</a>
+          <a href="#e85-valeurs"><span>4.2</span>Toutes les valeurs</a>
+          <a href="#e85-avance"><span>4.3</span>L'avance</a>
+          <a href="#e85-v0d"><span>4.4</span>Le froid et l'affichage</a>
+          <a href="#e85-verif"><span>4.5</span>Les vérifications</a>
+          <a href="#e85-suite"><span>4.6</span>La suite</a>
+        </nav>
+
+        <!-- Les 4 fichiers, en un coup d'œil -->
+        <h3 class="ethanol__titre" id="flashs" data-revele><span class="ethanol__num">4.0</span>Les 4 fichiers, en un coup d'œil <span class="ethanol__date">du 18 au 23/11/2026</span></h3>
+        <p class="ethanol__intro" data-revele>Chaque version est un fichier construit sur le PC fixe à partir de la copie du calculateur, puis vérifié par un programme : seules les valeurs prévues changent, le programme du calculateur reste identique octet par octet, et l'original est toujours gardé.</p>
+        <ol class="flashs" data-cascade>
+          <li class="flashs__carte" data-revele>
+            <p class="flashs__date">18-19/11 · flex v1</p>
+            <h4>Injecter plus, apprendre seul</h4>
+            <p class="flashs__chiffre">×1,297</p>
+            <p>Plus de carburant sur les 6 cylindres, et une plage d'adaptation élargie pour accepter du SP98 à l'E85. Démarrage réglé entre les deux.</p>
+            <a class="lien-fleche" href="#e85-valeurs">81 octets modifiés</a>
+          </li>
+          <li class="flashs__carte" data-revele>
+            <p class="flashs__date">20/11 · v0c</p>
+            <h4>Un peu plus d'avance</h4>
+            <p class="flashs__chiffre">+2,25°</p>
+            <p>L'étincelle partirait un peu plus tôt à forte charge : l'éthanol résiste mieux au cliquetis que le SP98.</p>
+            <a class="lien-fleche" href="#e85-avance">56 valeurs modifiées</a>
+          </li>
+          <li class="flashs__carte" data-revele>
+            <p class="flashs__date">23/11 · v0d</p>
+            <h4>Démarrer par le froid</h4>
+            <p class="flashs__chiffre">×1,20</p>
+            <p>Plus de carburant juste après un démarrage à froid : l'alcool s'évapore mal quand le moteur est froid.</p>
+            <a class="lien-fleche" href="#e85-v0d">12 valeurs modifiées</a>
+          </li>
+          <li class="flashs__carte" data-revele>
+            <p class="flashs__date">23/11 · v0e</p>
+            <h4>Afficher la bonne consommation</h4>
+            <p class="flashs__chiffre">×1,297</p>
+            <p>La consommation affichée ne tiendrait pas compte du carburant ajouté (hypothèse) : sa correction suit l'injection. Aucun effet sur le moteur.</p>
+            <a class="lien-fleche" href="#e85-v0d">6 valeurs modifiées</a>
+          </li>
+        </ol>
+
+        <!-- Principe -->
+        <h3 class="ethanol__titre" id="e85-principe" data-revele><span class="ethanol__num">4.1</span>Le principe : un flex sans capteur <span class="ethanol__date">décidé le 15/11, fichier construit le 18/11/2026</span></h3>
+        <div class="chantier__corps" data-revele>
+          <div>
+            <p>L'E85 demande environ <strong>25 à 40 % de carburant en plus</strong> que le SP98, selon sa teneur en éthanol (60 à 85 %). Sans capteur d'éthanol, le calculateur ne sait pas ce qu'il y a dans le réservoir : il le découvre par les sondes lambda, et son adaptation long terme par banc, la <strong>MUL</strong> (correction multiplicative), apprend l'écart.</p>
+            <p>Le fichier « flex v1 » multiplie donc la base d'injection par <strong>1,297</strong> et élargit la plage d'adaptation vers le bas. Au SP98, la MUL devrait retirer environ 23 % ; à l'E85 d'été, ajouter environ 8 % ; la butée haute d'origine (+15 %) n'est pas touchée (plage calculée).</p>
+            <p>Avance, pleine charge, VANOS, ralenti, antidémarrage et programme sont <strong>inchangés</strong>. Le 15/11, les analyses des deux PC arrivent à la même conclusion : un flex sans capteur est possible, avec une base ×1,30 et une butée basse élargie.</p>
+            <p>Une autre piste a été étudiée le même jour : un mode de démarrage SP98 / E85 choisi aux boutons du volant. Testé sur émulateur (1 077 636 contrôles, aucun échec), il n'a <strong>jamais été écrit</strong> dans le calculateur.</p>
+          </div>
+          <ul class="chiffres-cles chiffres-cles--colonne">
+            <li><strong>×1,297</strong><span>facteur d'injection des 6 cylindres (1,000 d'origine)</span></li>
+            <li><strong>-30 %</strong><span>butée basse de la MUL, au lieu de -12 %</span></li>
+            <li><strong>81 octets</strong><span>modifiés, tous dans la calibration</span></li>
+          </ul>
+        </div>
+
+        <!-- Les étapes de l'étude -->
+        <h4 class="ethanol__sous-titre" data-revele>Les étapes de l'étude</h4>
+        <ol class="plan-ethanol" data-revele>
+          <li class="plan-ethanol__fait"><span>Fait</span>Copie complète du calculateur (08/11), puis lecture de ses cartographies (11/11).</li>
+          <li class="plan-ethanol__fait"><span>Fait</span>Analyse du programme avec Ghidra (15/11) : où et comment chaque table est utilisée.</li>
+          <li class="plan-ethanol__fait"><span>Fait</span>Mode de démarrage au volant : testé sur émulateur, jamais écrit.</li>
+          <li class="plan-ethanol__fait"><span>Fait</span>Fichier flex v1 construit (18/11), relu par 3 revues indépendantes, chaque valeur validée (19/11).</li>
+          <li class="plan-ethanol__fait"><span>Fait</span>Versions v0c (avance), v0d (après-démarrage) et v0e (consommation affichée), préparées et vérifiées du 20 au 23/11.</li>
+          <li><span>Envisagé</span>Un boîtier flex fuel homologué, posé par un installateur agréé, pour rouler à l'E85 en toute légalité.</li>
+        </ol>
+
+        <!-- Valeurs modifiées -->
+        <h3 class="ethanol__titre" id="e85-valeurs" data-revele><span class="ethanol__num">4.2</span>Toutes les valeurs : modifiées et d'origine <span class="ethanol__date">fichier flex v1 du 18/11, validé le 19/11/2026</span></h3>
+        <p class="ethanol__intro" data-revele>D'abord le résumé des 81 octets modifiés, puis chaque table en détail, comme dans un logiciel de calibration.</p>
+        <div class="tableau-defilement" data-revele data-lenis-prevent>
+          <table class="historique-ltft tableau-flex">
+            <caption class="visuellement-cache">Valeurs du calculateur modifiées par le fichier flex v1</caption>
+            <thead><tr><th scope="col">Repère</th><th scope="col">Élément (définition 430037)</th><th scope="col">Origine</th><th scope="col">Flex v1</th><th scope="col">Pourquoi</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">A</th><td><code>t_ti_as_0..5</code> · facteur d'injection des 6 cylindres</td><td>1,000</td><td>1,296875 (×1,297)</td><td>L'E85 demande environ 25 à 40 % de carburant en plus. Le facteur est appliqué avant le temps mort des injecteurs (vérifié dans le code)</td></tr>
+              <tr><th scope="row">B</th><td><code>c_ti_ad_fac_min</code> · butée basse de l'adaptation MUL</td><td>-12 %</td><td>-30 %</td><td>Au SP98, avec la base ×1,297, il faut environ -23 %</td></tr>
+              <tr><th scope="row">B</th><td><code>c_lam_min</code> · butée basse de la régulation et de l'adaptation</td><td>-25 %</td><td>-31,25 %</td><td>Borne la somme régulation + MUL : indispensable au SP98</td></tr>
+              <tr><th scope="row">C1</th><td><code>c_lam_min_fsd</code> · seuil du défaut « mélange trop riche »</td><td>-31,25 %</td><td>-40 %</td><td>Pas de faux défaut au SP98</td></tr>
+              <tr><th scope="row">C2</th><td>Axe <code>ldp_ti_ad_fac_mmv</code> (1<sup>er</sup> point) et table <code>ip_ti_ad_fac_fac__tco__ti_ad_fac</code> (1<sup>re</sup> colonne)</td><td>-12 % ; 0,40 / 0,45 / 0,50 / 0,60</td><td>-30 % ; 0,996</td><td>Prise en compte de l'adaptation à froid sur la nouvelle plage</td></tr>
+              <tr><th scope="row">C3</th><td><code>ip_tipr_cst__tco</code> (pré-injection au démarrage) et <code>ip_ti_cst__n__tco</code> (injection de lancement)</td><td>origine</td><td>pré-injection ×1,14 à ×1,58 ; lancement ×1,41 à ×1,16 (graphique ci-dessous)</td><td>Profil de démarrage intermédiaire entre SP98 et E85 : le lancement et la pré-injection ne profitent pas de l'adaptation</td></tr>
+              <tr><th scope="row">C4</th><td><code>c_ti_ad_fac_fsd_ld</code></td><td>-11 %</td><td>non modifié</td><td>Garde une protection du canister</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <ul class="ethanol__notes" data-revele>
+          <li>Les 81 octets changés sont tous dans la zone de calibration.</li>
+          <li>Le temps d'injection lu par INPA serait pris avant le ×1,297 (probable, d'après le programme).</li>
+          <li>Rapport cyclique des injecteurs à pleine charge, calculé par le PC fixe avec un temps mort supposé de 0 à 0,8 ms (ce n'est pas une mesure) : E40 74-79 %, E50 77-82 %, E70 85-89 %, E85 à 85 % d'éthanol 91-95 %.</li>
+        </ul>
+        <div class="graphiques ethanol__graphiques">
+          <figure class="graphique graphique--large" data-revele>
+            <figcaption><h3>Profil de démarrage (C3)</h3><p>Facteur réel du flex v1 par rapport à l'origine (1 = inchangé), base ×1,297 comprise : le démarrage passe lui aussi par le facteur d'injection. Pré-injection : les 8 points de l'axe de température, de -30 à 90 °C ; lancement : sur les 3 lignes de régime.</p></figcaption>
+            <div class="graphique__zone" data-graphique="eth-c3"></div>
+          </figure>
+        </div>
+        <h4 class="ethanol__sous-titre" data-revele>Chaque table, case par case</h4>
+        <p class="ethanol__intro" data-revele>Choisissez une table. Les cases vont du bleu (valeur basse) au rouge (valeur haute) ; survolez-en une pour le détail. « Origine » et « Flex v1 » montrent les valeurs stockées ; « Écart » les compare (en points pour les pourcentages) ; pour les deux tables de démarrage, « Écart réel % » ajoute le facteur A (×1,297), appliqué lui aussi au démarrage. Les tables à deux dimensions ont leur surface 3D. Les tables « non modifiées » sont là pour le contexte : elles sont identiques dans l'original et dans le flex v1 (vérifié octet par octet le 20/11/2026). Dans la table C2, la première colonne de la vue « Écart » compare la case à -12 % d'origine à la case à -30 % du flex, l'axe ayant changé.</p>
+        <div class="cartos" data-cartos="facteurs,constantes,axeAdaptation,adaptation,lancement,preinjection,pleineCharge" data-premier="lancement" data-revele></div>
+        <!-- L'avance -->
+        <h3 class="ethanol__titre" id="e85-avance" data-revele><span class="ethanol__num">4.3</span>L'avance à l'allumage <span class="ethanol__date">version v0c du 20/11/2026</span></h3>
+        <div class="chantier__corps" data-revele>
+          <div>
+            <p>Le flex v1 ne touchait <strong>pas</strong> à l'allumage. La version v0c ajoute de l'avance là où l'origine est limitée par le cliquetis : <strong>+2,25°</strong> de 2 500 à 4 000 tr/min à forte charge, +1,5° à 4 250, +0,75° à 4 500, et moins aux bords. 56 valeurs changent, sur la table principale et sur l'avance optimale qui sert de référence au modèle de couple.</p>
+            <p><strong>Pourquoi l'éthanol le permettrait</strong> : il résiste mieux au cliquetis que le SP98, ce qui laisse en principe de la marge à forte charge.</p>
+            <p><strong>Une version écartée</strong> : un premier fichier à +2,25° jusqu'à 4 250 tr/min dépassait, à ce régime, le repère de surveillance du couple du calculateur, alors que l'origine ne le dépassait pas. La version retenue réduit les deux lignes du haut pour rester en dessous partout.</p>
+          </div>
+          <ul class="chiffres-cles chiffres-cles--colonne">
+            <li><strong>+2,25°</strong><span>d'avance au plus, à forte charge</span></li>
+            <li><strong>56</strong><span>valeurs d'avance modifiées</span></li>
+            <li><strong>1</strong><span>version écartée à la relecture</span></li>
+          </ul>
+        </div>
+        <h4 class="ethanol__sous-titre" data-revele>Les tables d'avance, avant et après la version v0c</h4>
+        <p class="ethanol__intro" data-revele>En degrés vilebrequin avant le point mort haut, selon le régime (lignes) et la charge en mg d'air par coup (colonnes). Les valeurs négatives, à très bas régime et forte charge, sont un retard. « Avant » est le fichier de référence, « Après » la version v0c ; « Écart » montre où l'avance bouge : un îlot à forte charge, entre 2 200 et 4 500 tr/min. La surface 3D se fait tourner au doigt ou à la souris. La table RON 91, non modifiée, est le repli plus prudent vers lequel le calculateur glisse quand il détecte du cliquetis.</p>
+        <div class="cartos" data-cartos="avanceV0c,avanceOptV0c,avance91" data-premier="avanceV0c" data-titre-modifiees="Modifiées par la version v0c (20/11)" data-revele></div>
+
+        <!-- Le froid et l'affichage -->
+        <h3 class="ethanol__titre" id="e85-v0d" data-revele><span class="ethanol__num">4.4</span>Le froid et l'affichage de la consommation <span class="ethanol__date">versions v0d et v0e du 23/11/2026</span></h3>
+        <div class="chantier__corps" data-revele>
+          <div>
+            <p><strong>Le froid</strong> : à la lecture des tables, le lancement et la pré-injection du flex v1 sont bien au-dessus de l'origine, mais l'après-démarrage ne reçoit probablement aucun supplément pour l'éthanol à froid (lecture estimée). La version v0d multiplie cette table par <strong>1,20</strong> à froid, 1,07 à 30 °C, et ne change rien moteur chaud : 12 valeurs. Un supplément modéré, parce qu'un utilisateur du forum avait dû revenir à l'origine avec un réglage trop riche.</p>
+            <p><strong>L'affichage</strong> : le temps d'injection transmis au tableau de bord serait pris avant le facteur ×1,297. La version v0e multiplie la table de correction de la consommation affichée par ce même facteur : 6 valeurs, sans aucun effet sur le moteur. L'hypothèse reste à vérifier par une mesure.</p>
+          </div>
+        </div>
+        <h4 class="ethanol__sous-titre" data-revele>Les deux tables, avant et après</h4>
+        <p class="ethanol__intro" data-revele>L'après-démarrage (v0d) dépend de la température d'eau (colonnes) et de l'air admis (lignes) : les deux lignes sont identiques, d'où une surface 3D en forme de ruban. La correction de la consommation (v0e) n'a qu'une dimension : 6 valeurs selon la charge, toutes multipliées par 1,297.</p>
+        <div class="cartos" data-cartos="apresDemarrage,consommation" data-premier="apresDemarrage" data-titre-modifiees="Modifiées par les versions v0d et v0e (23/11)" data-revele></div>
+
+        <!-- Les vérifications -->
+        <h3 class="ethanol__titre" id="e85-verif" data-revele><span class="ethanol__num">4.5</span>Les vérifications <span class="ethanol__date">pour chaque fichier</span></h3>
+        <ol class="methode methode--outils" data-cascade>
+          <li data-revele>
+            <span class="methode__etape">01 · Construire</span>
+            <p><code>construire_flex.py</code> part de la copie d'origine et d'une liste de valeurs validées, une par une. Il vérifie l'empreinte SHA-256 de l'original et refuse d'écraser un fichier existant.</p>
+          </li>
+          <li data-revele>
+            <span class="methode__etape">02 · Contrôler</span>
+            <p><code>ms43_verif.py</code> compare l'original et le fichier préparé : il liste chaque changement par son nom, refuse toute modification du programme, et alerte sur les marges des défauts de mélange.</p>
+          </li>
+          <li data-revele>
+            <span class="methode__etape">03 · Relire</span>
+            <p>Le flex v1 a été relu par 3 revues indépendantes ; la v0c a été corrigée après relecture (une version écartée). Les tables de ce site sont lues dans les fichiers eux-mêmes, avec la définition 430037.</p>
+          </li>
+          <li data-revele>
+            <span class="methode__etape">04 · Émuler</span>
+            <p>Le mode de démarrage au volant a été exécuté sur émulateur : 1 077 636 contrôles, 0 échec, et 8 erreurs volontaires toutes détectées. Il n'a jamais été écrit dans le calculateur.</p>
+          </li>
+        </ol>
+
+        <!-- La suite -->
+        <h3 class="ethanol__titre" id="e85-suite" data-revele><span class="ethanol__num">4.6</span>La suite <span class="ethanol__date">au 25/11/2026</span></h3>
+        <ol class="methode methode--outils" data-cascade>
+          <li data-revele>
+            <span class="methode__etape">01 · Rouler à l'E85 légalement</span>
+            <p>Pour rouler à l'E85 en toute légalité, j'envisage un boîtier flex fuel homologué, posé par un installateur agréé, avec mise à jour de la carte grise et déclaration à l'assureur. Les modifications logicielles présentées ici sont un projet d'étude, non homologué, à ne pas reproduire sur un véhicule circulant sur la voie publique.</p>
+          </li>
+          <li data-revele>
+            <span class="methode__etape">02 · Entretien</span>
+            <p>Prochaine vidange un an après celle de fin août 2026 ou 7 500 km plus loin (vers 171 800 km, calcul), au premier atteint ; filtre à essence chaque année ; niveau d'huile chaque mois l'hiver.</p>
+          </li>
+        </ol>
+
+        <div class="replis">
+          <details class="repli repli--section">
+            <summary>Pourquoi cette voie d'étude</summary>
+            <ul class="repli__liste">
+              <li>Le firmware communautaire MS43X gère le flex fuel, mais supprime l'antidémarrage et n'a pas de base prête pour l'E39 520i : écarté.</li>
+              <li>Modifier les cartographies d'origine garde l'antidémarrage.</li>
+              <li>Critère fixé le 14/11 : le calculateur doit rester capable de démarrer au SP98 ou au SP95-E10, même par grand froid. D'où un réglage qui s'adapte au mélange plutôt qu'un réglage fixe pour l'E85.</li>
+              <li>Le démarrage est réglé pour un mélange intermédiaire, car l'analyse du programme (Ghidra, 15/11) montre que la MUL corrige le fonctionnement et l'après-démarrage, mais pas le lancement ni la pré-injection. Et sous 78 °C, pour une MUL à -12 % ou au-delà, la table C2 ne l'appliquait qu'à 40-60 %, d'où sa modification.</li>
+            </ul>
+          </details>
+          <details class="repli repli--section">
+            <summary>Calcul du mélange et saisons de l'E85</summary>
+            <ul class="repli__liste">
+              <li>Hypothèses : stœchiométrie 14,7 pour l'essence et 9,0 pour l'éthanol, densités 0,745 et 0,789, base SP98 E5.</li>
+              <li>Carburant en plus : E10 +1,8 %, E20 +5,7 %, E25 +7,7 %, E30 +9,8 %, E85 +40 %.</li>
+              <li>E85 en France : 70 à 85 % d'éthanol l'été (1<sup>er</sup> mai au 30 septembre), 60 à 85 % le reste de l'année (hiver du 1<sup>er</sup> novembre au 15 mars, et intersaison). La teneur réelle à la pompe n'est pas affichée.</li>
+            </ul>
+          </details>
+          <details class="repli repli--section">
+            <summary>Les points encore ouverts</summary>
+            <ul class="repli__liste">
+              <li>Pneus arrière à remplacer.</li>
+              <li>Test de l'alarme d'origine avant tout achat d'antivol.</li>
+              <li>Capteur de qualité d'air de la climatisation absent : seul le recyclage automatique est perdu.</li>
+            </ul>
+          </details>
+        </div>
+      </div>
+    </section>
+    <!-- ══ Les sources ══ -->
+    <section class="section sources-e39" id="sources" data-etape="Les sources" aria-labelledby="sources-titre">
+      <div class="conteneur">
+        <div class="entete-section">
+          <p class="partie-badge" data-revele>Partie 5 · Les sources</p>
+          <p class="surtitre" data-revele>Comment j'ai trouvé mes informations</p>
+          <h2 class="titre-section" id="sources-titre" data-mots>Partir de presque rien, <em>vérifier tout.</em></h2>
+          <p data-revele>Il y a quelques mois, je n'y connaissais pas grand-chose aux calculateurs moteur. Ce projet est d'abord une étude : comprendre comment le logiciel d'origine fonctionne, avec quels outils on le lit, et comment vérifier chaque hypothèse par une mesure.</p>
+          <p data-revele>Ce travail m'a pris du temps : je voulais être sûr à 100 % de tout ce que je faisais. Chaque chiffre est revérifié à la source, chaque valeur d'un fichier est validée par moi, une par une, et une copie de l'original est toujours gardée.</p>
+        </div>
+
+        <div class="replis">
+          <details class="repli repli--section">
+            <summary>Les forums et les tutoriels</summary>
+            <ul class="repli__liste">
+              <li><strong>6enligne.net</strong> : le fil « Faire soi-même sa reprog E85 sur MS43 », lu en entier, avec les retours de ceux qui l'ont fait.</li>
+              <li><strong>Le wiki ms4x.net</strong> : la page du Siemens MS43, les fichiers d'origine et la définition des cartographies du logiciel 430037.</li>
+              <li><strong>Le tutoriel d'Adrien-24</strong> et le dépôt GitHub de <strong>Sheeanatek</strong> sur la conversion E85 du M54.</li>
+              <li><strong>bimmerfest, xoutpost, Pelican Parts, z4-forum</strong> : pression d'essence, filtre, capteur de qualité d'air.</li>
+              <li><strong>Des vidéos de préparateurs</strong> sur la conversion éthanol, regardées avec recul : la plupart sont des collaborations commerciales.</li>
+            </ul>
+          </details>
+          <details class="repli repli--section">
+            <summary>Les documents de référence</summary>
+            <ul class="repli__liste">
+              <li><strong>La documentation d'atelier BMW (TIS)</strong> pour les valeurs constructeur, comme les 3,5 bar d'essence.</li>
+              <li><strong>RealOEM</strong> et les catalogues de pièces (ECS Tuning, Turner Motorsport, BimmerWorld) pour les références.</li>
+              <li><strong>Les fiches techniques des fabricants</strong>, par exemple Denso pour le couple de serrage des bougies.</li>
+              <li><strong>Légifrance</strong> pour les teneurs en éthanol autorisées de l'E85, été comme hiver.</li>
+            </ul>
+          </details>
+          <details class="repli repli--section">
+            <summary>Les logiciels et les outils</summary>
+            <ul class="repli__liste">
+              <li><strong>Câble K+DCAN</strong>, <strong>EDIABAS et INPA</strong> pour lire chaque module, <strong>NCS Expert</strong> pour le codage.</li>
+              <li><strong>MS4x Flasher</strong> pour copier le calculateur, <strong>TunerPro</strong> et sa définition XDF pour lire les cartographies, <strong>Ghidra</strong> pour lire le programme.</li>
+              <li><strong>Deep OBD</strong> sur téléphone pour les premiers relevés, une valise V519, un multimètre, un manomètre d'essence et le GPS du téléphone.</li>
+              <li><strong>Mes propres scripts</strong> en PowerShell et en Python : enregistreur de trajet, analyses, construction et contrôle des fichiers.</li>
+              <li><strong>Un assistant IA</strong>, sur deux PC : recherche, calculs, relecture et documentation. Il propose ; je décide et je valide chaque valeur.</li>
+            </ul>
+          </details>
+        </div>
+      </div>
+    </section>
+    <!-- ══ Galerie ══ -->
+    <section class="section galerie volet" id="galerie" data-volet data-etape="Galerie" aria-labelledby="galerie-titre">
+      <div class="conteneur">
+        <div class="entete-section">
+          <p class="partie-badge" data-revele>Partie 5 · Galerie</p>
+          <p class="surtitre" data-revele>Galerie</p>
+          <h2 class="titre-section" id="galerie-titre" data-mots>Ma <em>voiture.</em></h2>
+        </div>
+        <div class="galerie__grille" data-cascade>
+          <figure data-revele><img src="img/e39/e39-bord-de-mer-orage-960.webp" srcset="img/e39/e39-bord-de-mer-orage-480.webp 480w, img/e39/e39-bord-de-mer-orage-960.webp 960w" sizes="(max-width: 719px) 100vw, 50vw" data-grande="img/e39/e39-bord-de-mer-orage.jpg" width="900" height="1599" loading="lazy" alt="Vue arrière sous un ciel d'orage, feux allumés, face à la mer, plaque floutée" /></figure>
+          <figure data-revele><img src="img/e39/e39-bord-de-mer-arriere-960.webp" srcset="img/e39/e39-bord-de-mer-arriere-480.webp 480w, img/e39/e39-bord-de-mer-arriere-960.webp 960w" sizes="(max-width: 719px) 100vw, 50vw" data-grande="img/e39/e39-bord-de-mer-arriere.jpg" width="900" height="1599" loading="lazy" alt="Trois quarts arrière sur un chemin en bord de mer, feux allumés, plaque floutée" /></figure>
+          <figure data-revele><img src="img/e39/e39-manoir-960.webp" srcset="img/e39/e39-manoir-480.webp 480w, img/e39/e39-manoir-960.webp 960w" sizes="(max-width: 719px) 100vw, 50vw" data-grande="img/e39/e39-manoir.jpg" width="900" height="1593" loading="lazy" alt="La voiture sur une pelouse devant une grande maison, avec deux autres BMW au fond" /></figure>
+          <figure data-revele><img src="img/e39/e39-coucher-soleil-960.webp" srcset="img/e39/e39-coucher-soleil-480.webp 480w, img/e39/e39-coucher-soleil-960.webp 960w" sizes="(max-width: 719px) 100vw, 50vw" data-grande="img/e39/e39-coucher-soleil.jpg" width="900" height="1370" loading="lazy" alt="Le capot sous un coucher de soleil rouge et orange, sur un parking" /></figure>
+          <figure data-revele><img src="img/e39/e39-trois-quarts-avant-jour-960.webp" srcset="img/e39/e39-trois-quarts-avant-jour-480.webp 480w, img/e39/e39-trois-quarts-avant-jour-960.webp 960w" sizes="(max-width: 719px) 100vw, 50vw" data-grande="img/e39/e39-trois-quarts-avant-jour.jpg" width="900" height="1599" loading="lazy" alt="Trois quarts avant, de jour, sur un parking arboré, plaque floutée" /></figure>
+          <figure data-revele><img src="img/e39/e39-bord-de-mer-large-960.webp" srcset="img/e39/e39-bord-de-mer-large-480.webp 480w, img/e39/e39-bord-de-mer-large-960.webp 960w" sizes="(max-width: 719px) 100vw, 50vw" data-grande="img/e39/e39-bord-de-mer-large.jpg" width="900" height="1599" loading="lazy" alt="Vue arrière, feux allumés, la mer et la côte au fond, plaque floutée" /></figure>
+          <figure data-revele><img src="img/e39/e39-arriere-porte-ouverte-960.webp" srcset="img/e39/e39-arriere-porte-ouverte-480.webp 480w, img/e39/e39-arriere-porte-ouverte-960.webp 960w" sizes="(max-width: 719px) 100vw, 50vw" data-grande="img/e39/e39-arriere-porte-ouverte.jpg" width="900" height="1599" loading="lazy" alt="Vue arrière, portière conducteur ouverte, sur une route bordée de grands arbres" /></figure>
+          <figure data-revele><img src="img/e39/e39-nuit-angel-eyes-jaunes.webp" data-grande="img/e39/e39-nuit-angel-eyes-jaunes.jpg" width="716" height="1272" loading="lazy" alt="La voiture de nuit, anneaux des phares jaunes et antibrouillards allumés" /></figure>
+          <figure data-revele><img src="img/e39/e39-face-avant-plaque-floutee.webp" data-grande="img/e39/e39-face-avant-plaque-floutee.jpg" width="612" height="813" loading="lazy" alt="Face avant sur du gravier, plaque floutée, anneaux des phares" /></figure>
+        </div>
+      </div>
+    </section>
+    <!-- ══ Suite ══ -->
+    <section class="section e39-suite" data-etape="Suite de la visite" aria-label="Suite de la visite">
+      <div class="conteneur e39-suite__contenu" data-revele>
+        <p class="pied__signature">Informatique &amp; automobile<span>.</span></p>
+        <div class="hero__actions">
+          <a class="bouton magnetique" href="https://goldenyan0.github.io/portfolio/"><span class="bouton__texte"><svg aria-hidden="true"><use href="#i-fleche-retour"/></svg>Retour au portfolio</span></a>
+          <a class="bouton bouton--clair magnetique" href="https://goldenyan0.github.io/portfolio/cv.html"><span class="bouton__texte">Voir mon CV</span></a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Fenêtre d'une fiche (remplie par e39.js) -->
+
+  <!-- Fenêtre d'une fiche pièce : la pièce dans la voiture complète, puis la pièce seule (e39.js et moteur-3d.js) -->
+  <dialog class="fiche-dialog fiche-piece" id="fiche-piece" aria-labelledby="fiche-piece-titre">
+    <button class="fiche-dialog__fermer" type="button" data-fermer aria-label="Fermer la fiche"><svg class="icone" aria-hidden="true"><use href="#i-fermer"/></svg></button>
+    <div class="fiche-dialog__contenu" data-lenis-prevent>
+      <article class="fiche-piece__corps">
+        <p class="fiche__numero" id="fiche-piece-categorie"></p>
+        <h3 id="fiche-piece-titre"></h3>
+        <div class="fiche-piece__vues">
+          <figure class="fiche-piece__vue">
+            <div class="fiche-piece__scene" id="fiche-piece-ensemble"><p class="fiche-piece__repli">La vue 3D n'est pas disponible.</p></div>
+            <figcaption>Dans la voiture</figcaption>
+          </figure>
+          <figure class="fiche-piece__vue">
+            <div class="fiche-piece__scene fiche-piece__scene--seule" id="fiche-piece-seule"><p class="fiche-piece__repli">La vue 3D n'est pas disponible.</p></div>
+            <figcaption>La pièce seule · clic gauche : tourner · clic droit : déplacer · molette : zoomer</figcaption>
+          </figure>
+          <figure class="fiche-piece__vue" id="fiche-piece-photo" hidden>
+            <div class="fiche-piece__scene fiche-piece__scene--photo"><img id="fiche-piece-image" alt="" decoding="async" /></div>
+            <figcaption>Photo réelle</figcaption>
+          </figure>
+        </div>
+        <p class="fiche-piece__description" id="fiche-piece-description"></p>
+        <div class="fiche-piece__voiture" id="fiche-piece-voiture" hidden>
+          <h4>Sur ma voiture</h4>
+          <ul class="fiche__valeurs"></ul>
+        </div>
+        <button class="lien-bouton" type="button" id="fiche-piece-systeme" hidden></button>
+      </article>
+    </div>
+  </dialog>
+
+  <footer class="pied">
+    <div class="conteneur">
+      <div class="pied__haut">
+        <p class="pied__signature">Yanis Poulain<span>.</span></p>
+        <ul class="pied__liens">
+          <li><a href="https://goldenyan0.github.io/portfolio/">Portfolio</a></li>
+          <li><a href="https://goldenyan0.github.io/portfolio/cv.html">CV</a></li>
+          <li><a href="https://github.com/Goldenyan0" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="mailto:y.poulain04@gmail.com">E-mail</a></li>
+        </ul>
+      </div>
+      <p class="pied__avertissement">Pour rouler à l'E85 en toute légalité, j'envisage un boîtier flex fuel homologué, posé par un installateur agréé, avec mise à jour de la carte grise et déclaration à l'assureur. Les modifications logicielles présentées ici sont un projet d'étude, non homologué, à ne pas reproduire sur un véhicule circulant sur la voie publique. Projet d'étude : analyse du logiciel, préparation et vérification des fichiers, tests sur émulateur et sur PC. Aucun fichier ni logiciel de BMW n'est diffusé sur ce site.</p>
+      <div class="pied__bas">
+        <p>© 2026 Yanis Poulain</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Librairies externes : Lenis (défilement fluide) et Three.js (moteur 3D, via l'importmap). -->
+  <script src="js/vendor/lenis.min.js" defer></script>
+  <script src="js/commun.js" defer></script>
+  <script src="js/donnees-releves.js" defer></script>
+  <script src="js/donnees-ethanol.js" defer></script>
+  <script src="js/donnees-cartos.js" defer></script>
+  <script src="js/pieces-e39.js" defer></script>
+  <script src="js/e39.js" defer></script>
+  <script type="module" src="js/espace-3d.js"></script>
+  <script type="module" src="js/moteur-3d.js"></script>
+</body>
+</html>
